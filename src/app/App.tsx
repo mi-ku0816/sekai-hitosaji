@@ -571,6 +571,7 @@ export default function App() {
       ];
       setCondiments(sampleData);
       localStorage.setItem('condimentsVersion', '4.2');
+      }
     };
 
     fetchCondiments()
