@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { X, Star, MapPin, Repeat, Globe, Heart, Bookmark, Languages, Loader } from 'lucide-react';
-import { Condiment, User } from '../types';
+import { X, Star, MapPin, Globe, Heart, Bookmark, ChevronLeft, Utensils, ShoppingBag, User } from 'lucide-react';
+import { Condiment, User as UserType } from '../types';
 import { TasteRadarChart } from './TasteRadarChart';
 import { TranslateModal } from './TranslateModal';
 import { Comments } from './Comments';
 import { Language, t, CATEGORY_KEYS, PURCHASE_LOCATION_KEYS } from '../i18n/translations';
-
 
 interface CondimentDetailProps {
   condiment: Condiment;
@@ -15,352 +14,236 @@ interface CondimentDetailProps {
   onToggleBookmark: (condimentId: string) => void;
   isLiked: boolean;
   isBookmarked: boolean;
-  currentUser?: User | null;
+  currentUser?: UserType | null;
 }
 
 export function CondimentDetail({ condiment, onClose, language, onToggleLike, onToggleBookmark, isLiked, isBookmarked, currentUser }: CondimentDetailProps) {
   const [showTranslate, setShowTranslate] = useState(false);
   const [translateContent, setTranslateContent] = useState({ title: '', text: '' });
-  const [descTranslations, setDescTranslations] = useState<Record<string, string>>({});
-  const [activeDescLang, setActiveDescLang] = useState<string | null>(null);
-  const [isTranslatingDescription, setIsTranslatingDescription] = useState(false);
-  const [descTranslateError, setDescTranslateError] = useState('');
   const [selectedImage, setSelectedImage] = useState(condiment.imageUrl);
   const locale = language === 'ja' ? 'ja-JP' : 'en-US';
 
-  const DESC_LANGS = [
-    { code: 'ja', label: '日本語' },
-    { code: 'en', label: 'English' },
-    { code: 'zh-CN', label: '中文' },
-    { code: 'ko', label: '한국어' },
-    { code: 'vi', label: 'Tiếng Việt' },
-  ];
-
-  const handleSelectDescLang = async (targetCode: string) => {
-    if (activeDescLang === targetCode) {
-      setActiveDescLang(null);
-      return;
-    }
-    if (targetCode === 'ja') {
-      setActiveDescLang(null);
-      return;
-    }
-    if (descTranslations[targetCode]) {
-      setActiveDescLang(targetCode);
-      return;
-    }
-    setIsTranslatingDescription(true);
-    setDescTranslateError('');
-    try {
-      const sourceLang = language === 'ja' ? 'ja' : 'en';
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetCode}&dt=t&q=${encodeURIComponent(condiment.description)}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data && data[0] && data[0][0] && data[0][0][0]) {
-        const translated = data[0].map((item: any) => item[0]).join('');
-        setDescTranslations(prev => ({ ...prev, [targetCode]: translated }));
-        setActiveDescLang(targetCode);
-      } else {
-        throw new Error('Translation failed');
-      }
-    } catch {
-      setDescTranslateError(language === 'ja' ? '翻訳に失敗しました' : 'Translation failed');
-    } finally {
-      setIsTranslatingDescription(false);
-    }
+  const tasteLabels: Record<string, string> = {
+    sweetness: language === 'ja' ? '甘味' : 'Sweet',
+    sourness: language === 'ja' ? '酸味' : 'Sour',
+    bitterness: language === 'ja' ? '苦味' : 'Bitter',
+    umami: language === 'ja' ? '旨味' : 'Umami',
+    saltiness: language === 'ja' ? '塩味' : 'Salty',
+    richness: language === 'ja' ? '濃厚さ' : 'Rich',
+    aroma: language === 'ja' ? '香り' : 'Aroma',
   };
 
+  const topTastes = Object.entries(condiment.tasteProfile)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3);
+
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col max-w-md mx-auto">
-      <div className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-        <button onClick={onClose} className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
-          <X size={20} />
-          <span className="text-sm">{language === 'ja' ? '戻る' : 'Back'}</span>
-        </button>
-        <h2 className="text-base font-semibold truncate mx-2 flex-1 text-center">{condiment.name}</h2>
-          <div className="flex items-center gap-1">
+    <div
+      className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-6"
+      onClick={onClose}
+    >
+    <div
+      className="bg-[#faf7f2] w-full sm:max-w-lg sm:rounded-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* Hero Image */}
+      <div className="relative h-64 bg-white flex-shrink-0 overflow-hidden flex items-center justify-center p-3">
+        {selectedImage ? (
+          <img src={selectedImage} alt={condiment.name} className="w-full h-full object-contain" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-8xl opacity-20">🧂</div>
+        )}
+        {/* Dark gradient overlay at bottom only for text legibility */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#3d1f00]/70 to-transparent" />
+
+        {/* Top bar */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-4 pb-2">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-1 text-white/80 hover:text-white bg-black/20 rounded-full px-3 py-1.5 text-sm backdrop-blur-sm"
+          >
+            <ChevronLeft size={16} />
+            {language === 'ja' ? '戻る' : 'Back'}
+          </button>
+          <div className="flex items-center gap-2">
             <button
               onClick={() => onToggleLike(condiment.id)}
-              className={`p-2 rounded-lg transition-colors ${
-                isLiked ? 'text-red-600' : 'text-gray-400 hover:text-gray-600'
-              }`}
-              title={language === 'ja' ? 'いいね' : 'Like'}
+              className={`p-2 rounded-full backdrop-blur-sm transition-colors ${isLiked ? 'bg-red-500/80 text-white' : 'bg-black/20 text-white/80 hover:bg-red-500/60'}`}
             >
-              <Heart size={20} className={isLiked ? 'fill-red-600' : ''} />
+              <Heart size={18} className={isLiked ? 'fill-white' : ''} />
             </button>
             <button
               onClick={() => onToggleBookmark(condiment.id)}
-              className={`p-2 rounded-lg transition-colors ${
-                isBookmarked ? 'text-yellow-500' : 'text-gray-400 hover:text-gray-600'
-              }`}
-              title={language === 'ja' ? 'ブックマーク' : 'Bookmark'}
+              className={`p-2 rounded-full backdrop-blur-sm transition-colors ${isBookmarked ? 'bg-[#c17f3a]/80 text-white' : 'bg-black/20 text-white/80 hover:bg-[#c17f3a]/60'}`}
             >
-              <Bookmark size={20} className={isBookmarked ? 'fill-yellow-500' : ''} />
+              <Bookmark size={18} className={isBookmarked ? 'fill-white' : ''} />
             </button>
             <button
               onClick={() => {
-                const dishText = condiment.recommendedDishes.length > 0
-                  ? `\n\n【${language === 'ja' ? 'おすすめ料理' : 'Recommended Dishes'}】\n${condiment.recommendedDishes.join('、')}`
-                  : '';
-                setTranslateContent({
-                  title: condiment.name,
-                  text: condiment.description + dishText
-                });
+                setTranslateContent({ title: condiment.name, text: condiment.description });
                 setShowTranslate(true);
               }}
-              className="p-2 text-blue-500 hover:text-blue-700 transition-colors"
-              title={language === 'ja' ? '翻訳' : 'Translate'}
+              className="p-2 rounded-full bg-black/20 text-white/80 hover:bg-black/40 backdrop-blur-sm transition-colors"
             >
-              <Globe size={20} />
+              <Globe size={18} />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-        <div className="p-4">
-          <div className="space-y-4">
-            {/* Image */}
-            <div className="space-y-2">
-              <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
-                {selectedImage ? (
-                  <img
-                    src={selectedImage}
-                    alt={condiment.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="text-gray-400 text-9xl">🧂</div>
-                  </div>
-                )}
+        {/* Bottom info overlay */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <span className="inline-block px-2 py-0.5 border border-[#c17f3a] text-[#e8d5b0] text-[10px] rounded mb-2">
+                {t(language, CATEGORY_KEYS[condiment.category])}
+              </span>
+              <h2 className="text-2xl font-bold text-white leading-tight">{condiment.name}</h2>
+              <div className="flex items-center gap-1.5 mt-1">
+                <MapPin size={12} className="text-[#c17f3a]" />
+                <span className="text-sm text-[#e8d5b0]">{condiment.origin}</span>
               </div>
-              {/* Thumbnail Gallery */}
-              <div className="grid grid-cols-4 gap-2">
-                <button
-                  onClick={() => setSelectedImage(condiment.imageUrl)}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedImage === condiment.imageUrl ? 'border-orange-500' : 'border-gray-200 hover:border-orange-300'
-                  }`}
-                >
-                  <img
-                    src={condiment.imageUrl}
-                    alt={condiment.name}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-                {condiment.dishImageUrl && (
-                  <button
-                    onClick={() => setSelectedImage(condiment.dishImageUrl!)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === condiment.dishImageUrl ? 'border-orange-500' : 'border-gray-200 hover:border-orange-300'
-                    }`}
-                  >
-                    <img
-                      src={condiment.dishImageUrl}
-                      alt="Dish"
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                )}
-                {/* Placeholder thumbnails */}
-                {[...Array(Math.max(0, 4 - (condiment.dishImageUrl ? 2 : 1)))].map((_, i) => (
-                  <div key={i} className="aspect-square rounded-lg bg-gray-100 border-2 border-gray-200" />
+            </div>
+            <div className="flex flex-col items-center bg-black/30 backdrop-blur-sm rounded-xl px-3 py-2">
+              <div className="flex items-center gap-0.5 mb-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} size={12} className={i < condiment.repeatRating ? 'text-[#c17f3a] fill-[#c17f3a]' : 'text-white/20'} />
+                ))}
+              </div>
+              <span className="text-lg font-bold text-white">{condiment.repeatRating.toFixed(1)}</span>
+              <span className="text-[9px] text-[#e8d5b0]">{language === 'ja' ? 'リピート度' : 'Rating'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Thumbnail strip */}
+        {condiment.dishImageUrl && (
+          <div className="absolute right-4 bottom-20 flex flex-col gap-1.5">
+            {[condiment.imageUrl, condiment.dishImageUrl].filter(Boolean).map((url, i) => (
+              <button
+                key={i}
+                onClick={() => setSelectedImage(url!)}
+                className={`w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === url ? 'border-[#c17f3a]' : 'border-white/30'}`}
+              >
+                <img src={url!} alt="" className="w-full h-full object-contain bg-white p-0.5" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-5 py-5 space-y-5">
+
+          {/* Description */}
+          <div className="bg-white rounded-2xl border border-[#e2d5c0] overflow-hidden">
+            <div className="px-4 py-2 border-b border-[#e2d5c0] bg-[#faf7f2]">
+              <span className="text-[10px] font-bold text-[#7c4a1e] tracking-widest uppercase">{t(language, 'description')}</span>
+            </div>
+            <p className="px-4 py-3 text-sm text-[#3d1f00] leading-relaxed">{condiment.description}</p>
+          </div>
+
+          {/* Recommended dishes — prominent */}
+          {condiment.recommendedDishes.length > 0 && (
+            <div className="bg-[#3d1f00] rounded-2xl overflow-hidden">
+              <div className="px-4 py-3 flex items-center gap-2 border-b border-white/10">
+                <Utensils size={14} className="text-[#c17f3a]" />
+                <span className="text-xs font-bold text-white tracking-wider">{t(language, 'recommendedDishes')}</span>
+              </div>
+              <div className="px-4 py-3 flex flex-wrap gap-2">
+                {condiment.recommendedDishes.map((dish, i) => (
+                  <span key={i} className="px-3 py-1.5 bg-white/10 text-[#e8d5b0] text-sm rounded-lg border border-white/10 font-medium">
+                    {dish}
+                  </span>
                 ))}
               </div>
             </div>
+          )}
 
-            {/* Details */}
-            <div className="space-y-4">
-            {/* Title and Rating */}
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">{condiment.name}</h2>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={18}
-                      className={i < condiment.repeatRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
-                    />
-                  ))}
-                </div>
-                <span className="text-lg font-bold text-gray-900">{condiment.repeatRating.toFixed(1)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-orange-100 text-orange-700 text-sm rounded-full font-medium">
-                  {t(language, CATEGORY_KEYS[condiment.category])}
+          {/* Taste highlights + radar */}
+          <div className="bg-white rounded-2xl border border-[#e2d5c0] overflow-hidden">
+            <div className="px-4 py-2 border-b border-[#e2d5c0] bg-[#faf7f2] flex items-center gap-2">
+              <span className="text-[10px] font-bold text-[#7c4a1e] tracking-widest uppercase">{t(language, 'tasteProfile')}</span>
+            </div>
+            <div className="px-4 pt-3 pb-1 flex flex-wrap gap-1.5">
+              {topTastes.map(([key, val]) => (
+                <span key={key} className="flex items-center gap-1 px-2.5 py-1 bg-[#fdf5ea] border border-[#e8d5b0] rounded-full text-xs text-[#7c4a1e] font-medium">
+                  {tasteLabels[key]}
+                  <span className="font-bold text-[#c17f3a]">{val}</span>
                 </span>
-              </div>
+              ))}
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">{t(language, 'origin')}</h3>
-                <p className="text-gray-900">{condiment.origin}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">{t(language, 'purchaseLocation')}</h3>
-                <div className="flex items-center gap-1">
-                  <MapPin size={16} className="text-gray-600" />
-                  <p className="text-gray-900">{t(language, PURCHASE_LOCATION_KEYS[condiment.purchaseLocation])}</p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <h3 className="text-sm font-medium text-gray-500 mr-1">{t(language, 'description')}</h3>
-                {DESC_LANGS.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => handleSelectDescLang(lang.code)}
-                    disabled={isTranslatingDescription && activeDescLang !== lang.code}
-                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors ${
-                      (lang.code === 'ja' && activeDescLang === null) || activeDescLang === lang.code
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-600'
-                    } disabled:opacity-40`}
-                  >
-                    {isTranslatingDescription && lang.code !== 'ja' && !descTranslations[lang.code] ? (
-                      <Loader size={10} className="animate-spin" />
-                    ) : null}
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
-              {descTranslateError && (
-                <p className="text-xs text-red-500 mb-1">{descTranslateError}</p>
-              )}
-              {isTranslatingDescription && (
-                <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
-                  <Loader size={12} className="animate-spin" />
-                  <span>{language === 'ja' ? '翻訳中...' : 'Translating...'}</span>
-                </div>
-              )}
-              <p className="text-gray-900 whitespace-pre-wrap">
-                {activeDescLang && descTranslations[activeDescLang]
-                  ? descTranslations[activeDescLang]
-                  : condiment.description}
-              </p>
-              {activeDescLang && (
-                <p className="text-xs text-gray-400 mt-1">
-                  {language === 'ja' ? '※ Google翻訳による自動翻訳' : '※ Auto-translated by Google Translate'}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-2">{t(language, 'tasteProfile')}</h3>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <TasteRadarChart tasteProfile={condiment.tasteProfile} size="medium" />
-              </div>
-            </div>
-
-            {condiment.recommendedDishes.length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">{t(language, 'recommendedDishes')}</h3>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {condiment.recommendedDishes.map((dish, index) => (
-                    <span key={index} className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                      {dish}
-                    </span>
-                  ))}
-                </div>
-                {/* 投稿時の料理写真 */}
-                {condiment.dishImageUrl && (
-                  <>
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">
-                      {language === 'ja' ? '料理の写真' : 'Dish Photo'}
-                    </h3>
-                    <div className="rounded-xl overflow-hidden aspect-video bg-gray-100">
-                      <img
-                        src={condiment.dishImageUrl}
-                        alt={language === 'ja' ? '料理の写真' : 'Dish photo'}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {condiment.pairingCondiments && condiment.pairingCondiments.length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">
-                  {language === 'ja' ? '相性のよい調味料' : 'Pairing Condiments'}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {condiment.pairingCondiments.map((name, i) => (
-                    <span key={i} className="px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full flex items-center gap-1">
-                      <span className="text-orange-400">×</span>
-                      {name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="border-t pt-4">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">{t(language, 'postedBy')}</h3>
-              <div className="bg-gray-50 rounded p-3 space-y-2">
-                <div>
-                  <span className="text-sm font-medium">{condiment.postedBy.nickname}</span>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">味覚バッジ:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {condiment.postedBy.tasteBadges.map((badge, index) => (
-                      <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-                        {badge}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">{t(language, 'postedDate')}</h3>
-              <p className="text-gray-600 text-sm">
-                {new Date(condiment.createdAt).toLocaleString(locale)}
-              </p>
-            </div>
+            <div className="px-4 pb-3">
+              <TasteRadarChart tasteProfile={condiment.tasteProfile} size="medium" />
             </div>
           </div>
 
-          {/* Reviews Section */}
-          <div className="mt-8 border-t pt-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Star size={20} className="text-yellow-400" />
-              {language === 'ja' ? 'レビュー' : 'Reviews'}
-            </h3>
-            <div className="space-y-4">
-              {/* Mock Review */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-purple-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    {condiment.postedBy.nickname[0]}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{condiment.postedBy.nickname}</p>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          size={12}
-                          className={i < condiment.repeatRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-gray-700 text-sm">{condiment.description}</p>
+          {/* Details grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white rounded-xl border border-[#e2d5c0] p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <ShoppingBag size={12} className="text-[#c17f3a]" />
+                <span className="text-[10px] font-bold text-[#7c4a1e] uppercase tracking-wide">{t(language, 'purchaseLocation')}</span>
               </div>
+              <p className="text-sm font-medium text-[#3d1f00]">{t(language, PURCHASE_LOCATION_KEYS[condiment.purchaseLocation])}</p>
+            </div>
+            <div className="bg-white rounded-xl border border-[#e2d5c0] p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <MapPin size={12} className="text-[#c17f3a]" />
+                <span className="text-[10px] font-bold text-[#7c4a1e] uppercase tracking-wide">{t(language, 'origin')}</span>
+              </div>
+              <p className="text-sm font-medium text-[#3d1f00]">{condiment.origin}</p>
             </div>
           </div>
-          <div className="px-6 pb-6">
+
+          {/* Dish photo */}
+          {condiment.dishImageUrl && (
+            <div className="bg-white rounded-2xl border border-[#e2d5c0] overflow-hidden">
+              <div className="px-4 py-2 border-b border-[#e2d5c0] bg-[#faf7f2]">
+                <span className="text-[10px] font-bold text-[#7c4a1e] tracking-widest uppercase">{language === 'ja' ? '料理の写真' : 'Dish Photo'}</span>
+              </div>
+              <div className="aspect-video">
+                <img src={condiment.dishImageUrl} alt="dish" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          )}
+
+          {/* Posted by */}
+          <div className="bg-white rounded-2xl border border-[#e2d5c0] overflow-hidden">
+            <div className="px-4 py-2 border-b border-[#e2d5c0] bg-[#faf7f2] flex items-center gap-2">
+              <User size={12} className="text-[#c17f3a]" />
+              <span className="text-[10px] font-bold text-[#7c4a1e] tracking-widest uppercase">{t(language, 'postedBy')}</span>
+            </div>
+            <div className="px-4 py-3">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-9 h-9 bg-[#f5ede0] rounded-full flex items-center justify-center text-[#7c4a1e] font-bold text-sm">
+                  {condiment.postedBy.nickname[0]}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[#3d1f00]">{condiment.postedBy.nickname}</p>
+                  <p className="text-[10px] text-[#a07850]">{new Date(condiment.createdAt).toLocaleDateString(locale)}</p>
+                </div>
+              </div>
+              {condiment.postedBy.tasteBadges.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {condiment.postedBy.tasteBadges.map((badge, i) => (
+                    <span key={i} className="px-2 py-0.5 bg-[#f5ede0] text-[#7c4a1e] text-[10px] rounded-full border border-[#e2d5c0]">
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Comments */}
+          <div className="bg-white rounded-2xl border border-[#e2d5c0] overflow-hidden">
             <Comments condimentId={condiment.id} currentUser={currentUser ?? null} />
           </div>
+
+          <div className="h-4" />
         </div>
       </div>
 
@@ -372,6 +255,7 @@ export function CondimentDetail({ condiment, onClose, language, onToggleLike, on
           currentLanguage={language}
         />
       )}
+    </div>
     </div>
   );
 }

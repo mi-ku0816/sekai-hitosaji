@@ -1,5 +1,6 @@
-import { Droplet, Coffee, Sparkles, Candy, Soup, FlaskConical, Flame, Layers, MoreHorizontal } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { Language, t, CATEGORY_KEYS } from '../i18n/translations';
+import { CATEGORY_IMAGES, CATEGORY_EMOJI } from '../categoryImages';
 
 interface CategoryGridProps {
   selectedCategory: string;
@@ -7,70 +8,90 @@ interface CategoryGridProps {
   language: Language;
 }
 
-const categoryIcons: Record<string, any> = {
-  '醤油': Droplet,
-  '味噌': Coffee,
-  '塩': Sparkles,
-  '砂糖': Candy,
-  '酢': Soup,
-  '油': Droplet,
-  'スパイス': Flame,
-  'ソース': FlaskConical,
-  'その他': MoreHorizontal,
+const categoryEmoji = CATEGORY_EMOJI;
+
+const categoryAccents: Record<string, { bg: string; border: string }> = {
+  '醤油':      { bg: 'bg-[#f5e8d0]', border: 'border-[#c17f3a]' },
+  '味噌':      { bg: 'bg-[#f0e6d8]', border: 'border-[#a06830]' },
+  '塩':        { bg: 'bg-[#f7f0e6]', border: 'border-[#d4b896]' },
+  '砂糖':      { bg: 'bg-[#fdf5ea]', border: 'border-[#e8c98a]' },
+  '酢':        { bg: 'bg-[#f0ede0]', border: 'border-[#b8a870]' },
+  '油':        { bg: 'bg-[#f5ede0]', border: 'border-[#c8a060]' },
+  'スパイス':  { bg: 'bg-[#f8e8e0]', border: 'border-[#c07060]' },
+  'ソース':    { bg: 'bg-[#f0e8e8]', border: 'border-[#b08080]' },
+  'ドレッシング': { bg: 'bg-[#eef5e8]', border: 'border-[#88b060]' },
+  'タレ':      { bg: 'bg-[#f5eae0]', border: 'border-[#c09060]' },
+  'だし':      { bg: 'bg-[#ece8f0]', border: 'border-[#9080b0]' },
+  '辛味':      { bg: 'bg-[#f8e4e0]', border: 'border-[#d05040]' },
+  'ハーブ':    { bg: 'bg-[#e8f0e8]', border: 'border-[#60a060]' },
+  '柑橘':      { bg: 'bg-[#f8f0d8]', border: 'border-[#d0a820]' },
+  'その他':    { bg: 'bg-[#ede8e0]', border: 'border-[#a09080]' },
 };
 
-const categoryColors: Record<string, string> = {
-  '醤油': 'from-amber-100 to-amber-200 border-amber-300 text-amber-800',
-  '味噌': 'from-yellow-100 to-yellow-200 border-yellow-300 text-yellow-800',
-  '塩': 'from-gray-100 to-gray-200 border-gray-300 text-gray-800',
-  '砂糖': 'from-pink-100 to-pink-200 border-pink-300 text-pink-800',
-  '酢': 'from-lime-100 to-lime-200 border-lime-300 text-lime-800',
-  '油': 'from-orange-100 to-orange-200 border-orange-300 text-orange-800',
-  'スパイス': 'from-red-100 to-red-200 border-red-300 text-red-800',
-  'ソース': 'from-purple-100 to-purple-200 border-purple-300 text-purple-800',
-  'その他': 'from-indigo-100 to-indigo-200 border-indigo-300 text-indigo-800',
-};
+const categories = [
+  '醤油', '味噌', '塩', '砂糖', '酢', '油',
+  'スパイス', 'ソース', 'ドレッシング', 'タレ',
+  'だし', '辛味', 'ハーブ', '柑橘', 'その他',
+];
 
 export function CategoryGrid({ selectedCategory, onSelectCategory, language }: CategoryGridProps) {
-  const categories = ['醤油', '味噌', '塩', '砂糖', '酢', '油', 'スパイス', 'ソース', 'その他'];
-
   return (
-    <div className="mb-8 bg-white">
-      <h2 className="text-xl font-semibold mb-4">
-        {t(language, 'browseByCategory')}
-      </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div className="mb-8">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-sm font-bold text-[#3d1f00] tracking-wide">{t(language, 'browseByCategory')}</span>
+        <div className="flex-1 h-px bg-[#e2d5c0]" />
+      </div>
+
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+        {/* すべて */}
         <button
           onClick={() => onSelectCategory('すべて')}
-          className={`p-4 rounded-lg border-2 transition-all ${
+          className={`relative rounded-2xl border-2 p-3 transition-all duration-200 overflow-hidden ${
             selectedCategory === 'すべて'
-              ? 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-600 text-white shadow-lg scale-105'
-              : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 text-blue-800 hover:shadow-md hover:scale-105'
+              ? 'bg-[#7c4a1e] border-[#7c4a1e] shadow-lg scale-[1.03]'
+              : 'bg-[#fdf5ea] border-[#e2d5c0] hover:border-[#c17f3a] hover:shadow-md hover:scale-[1.02]'
           }`}
         >
           <div className="flex flex-col items-center gap-2">
-            <Layers size={32} />
-            <span className="font-medium text-sm">{t(language, 'all')}</span>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+              selectedCategory === 'すべて' ? 'bg-white/20' : 'bg-[#f0e6d8]'
+            }`}>
+              <Layers size={22} className={selectedCategory === 'すべて' ? 'text-white' : 'text-[#7c4a1e]'} />
+            </div>
+            <span className={`font-bold text-xs leading-tight text-center ${selectedCategory === 'すべて' ? 'text-white' : 'text-[#3d1f00]'}`}>
+              {t(language, 'all')}
+            </span>
           </div>
         </button>
 
         {categories.map((category) => {
-          const Icon = categoryIcons[category];
+          const accent = categoryAccents[category] ?? { bg: 'bg-[#ede8e0]', border: 'border-[#a09080]' };
+          const emoji = categoryEmoji[category] ?? '🧂';
           const isSelected = selectedCategory === category;
 
           return (
             <button
               key={category}
               onClick={() => onSelectCategory(category)}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`relative rounded-2xl border-2 p-3 transition-all duration-200 overflow-hidden ${
                 isSelected
-                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-600 text-white shadow-lg scale-105'
-                  : `bg-gradient-to-br ${categoryColors[category]} border-2 hover:shadow-md hover:scale-105`
+                  ? 'bg-[#7c4a1e] border-[#7c4a1e] shadow-lg scale-[1.03]'
+                  : `${accent.bg} ${accent.border} hover:shadow-md hover:scale-[1.02]`
               }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <Icon size={32} />
-                <span className="font-medium text-sm">{t(language, CATEGORY_KEYS[category])}</span>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-colors overflow-hidden ${
+                  isSelected ? 'bg-white/20' : 'bg-white'
+                }`}>
+                  {CATEGORY_IMAGES[category] ? (
+                    <img src={CATEGORY_IMAGES[category]} alt={category} className="w-full h-full object-contain p-0.5" />
+                  ) : (
+                    emoji
+                  )}
+                </div>
+                <span className={`font-bold text-xs leading-tight text-center ${isSelected ? 'text-white' : 'text-[#3d1f00]'}`}>
+                  {CATEGORY_KEYS[category] ? t(language, CATEGORY_KEYS[category]) : category}
+                </span>
               </div>
             </button>
           );

@@ -114,3 +114,15 @@ export async function toggleBookmark(userId: string, condimentId: string, bookma
     if (error) throw error;
   }
 }
+
+export async function fetchAllLikeCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from('likes')
+    .select('condiment_id');
+  if (error) throw error;
+  const counts: Record<string, number> = {};
+  for (const row of data ?? []) {
+    counts[row.condiment_id] = (counts[row.condiment_id] ?? 0) + 1;
+  }
+  return counts;
+}

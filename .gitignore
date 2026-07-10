@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+dist-ssr/
+
+# environment variables & secrets
+.env
+.env.*
+*.env
+*.env.txt
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor / tooling
+.claude/
+.vscode/
+.idea/
+.DS_Store
+
+# misc
+*.local

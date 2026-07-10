@@ -1,6 +1,6 @@
-import { Eye, Star, Users, Repeat, Heart, Bookmark } from 'lucide-react';
+import { Eye, Star, Heart, Bookmark, MapPin } from 'lucide-react';
 import { AggregatedCondiment } from '../types';
-import { Language, t, CATEGORY_KEYS, PURCHASE_LOCATION_KEYS } from '../i18n/translations';
+import { Language, t, CATEGORY_KEYS } from '../i18n/translations';
 
 interface CondimentCardProps {
   aggregated: AggregatedCondiment;
@@ -18,101 +18,101 @@ export function CondimentCard({ aggregated, onViewReviews, language, onToggleLik
   const isBookmarked = bookmarkedCondiments.includes(latestPost.id);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all cursor-pointer">
-      <div className="h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
+    <div className="bg-white rounded-xl border border-[#e2d5c0] overflow-hidden hover:border-[#c17f3a] hover:shadow-md transition-all cursor-pointer group">
+      {/* Accent bar */}
+      <div className="h-1 bg-[#7c4a1e]" />
+
+      {/* Image */}
+      <div className="h-36 sm:h-44 bg-white flex items-center justify-center overflow-hidden p-2">
         {aggregated.representativeImage ? (
           <img
             src={aggregated.representativeImage}
             alt={aggregated.name}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="text-gray-300 text-6xl">🧂</div>
+          <div className="text-5xl opacity-40">🧂</div>
         )}
       </div>
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-bold text-gray-900">{aggregated.name}</h3>
-          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
+
+      <div className="p-3">
+        {/* Name + category */}
+        <div className="flex items-start justify-between gap-1 mb-1.5">
+          <h3 className="font-bold text-[#2c1a06] text-sm leading-tight">{aggregated.name}</h3>
+          <span className="px-1.5 py-0.5 border border-[#c17f3a] text-[#7c4a1e] text-[10px] rounded whitespace-nowrap flex-shrink-0">
             {t(language, CATEGORY_KEYS[aggregated.category])}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1">
+        {/* Rating */}
+        <div className="flex items-center gap-1 mb-1.5">
+          <div className="flex items-center gap-0.5">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
-                size={14}
-                className={i < Math.round(aggregated.averageRepeatRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
+                size={11}
+                className={i < Math.round(aggregated.averageRepeatRating) ? 'text-[#c17f3a] fill-[#c17f3a]' : 'text-[#e2d5c0]'}
               />
             ))}
           </div>
-          <span className="text-sm text-gray-600">{aggregated.averageRepeatRating.toFixed(1)}</span>
-          <span className="flex items-center gap-1 text-xs text-gray-400">
-            ({aggregated.postCount}{language === 'ja' ? '件' : ' reviews'})
-          </span>
+          <span className="text-xs text-[#7c4a1e] font-medium">{aggregated.averageRepeatRating.toFixed(1)}</span>
+          <span className="text-[10px] text-[#a07850]">({aggregated.postCount}{language === 'ja' ? '件' : ''})</span>
         </div>
 
-        <p className="text-gray-600 text-sm mb-2 line-clamp-2 leading-relaxed">{latestPost.description}</p>
-        <p className="text-gray-400 text-xs mb-3">📍 {aggregated.origin}</p>
+        {/* Description */}
+        <p className="text-[#5c3d11] text-xs mb-1.5 line-clamp-2 leading-relaxed">{latestPost.description}</p>
 
+        {/* Origin */}
+        <div className="flex items-center gap-1 mb-2">
+          <MapPin size={11} className="text-[#c17f3a] flex-shrink-0" />
+          <span className="text-[10px] text-[#a07850]">{aggregated.origin}</span>
+        </div>
+
+        {/* Dishes */}
         {latestPost.recommendedDishes.length > 0 && (
-          <div className="mb-3">
-            <p className="text-xs text-gray-500 mb-1">{t(language, 'recommendedDishes')}:</p>
+          <div className="mb-2 p-2 bg-[#fdf5ea] rounded-lg border border-[#e8d5b0]">
+            <p className="text-xs font-bold text-[#c17f3a] uppercase tracking-wide mb-1">{language === 'ja' ? 'おすすめ料理' : 'Best with'}</p>
             <div className="flex flex-wrap gap-1">
-              {latestPost.recommendedDishes.slice(0, 2).map((dish, index) => (
-                <span key={index} className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded">
+              {latestPost.recommendedDishes.slice(0, 3).map((dish, index) => (
+                <span key={index} className="px-2 py-0.5 bg-white border border-[#e2d5c0] text-[#5c3311] text-xs rounded font-medium">
                   {dish}
                 </span>
               ))}
-              {latestPost.recommendedDishes.length > 2 && (
-                <span className="px-2 py-0.5 text-gray-500 text-xs">
-                  +{latestPost.recommendedDishes.length - 2}
-                </span>
+              {latestPost.recommendedDishes.length > 3 && (
+                <span className="px-1.5 py-0.5 text-[#a07850] text-[10px]">+{latestPost.recommendedDishes.length - 3}</span>
               )}
             </div>
           </div>
         )}
 
-        <div className="flex items-center gap-2 mb-2">
+        {/* Actions */}
+        <div className="flex items-center gap-1.5">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleLike(latestPost.id);
-            }}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded transition-colors ${
-              isLiked
-                ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            onClick={(e) => { e.stopPropagation(); onToggleLike(latestPost.id); }}
+            className={`p-1.5 rounded-lg transition-colors ${
+              isLiked ? 'bg-red-50 text-red-500' : 'bg-[#f5ede0] text-[#a07850] hover:bg-red-50 hover:text-red-400'
             }`}
             title={language === 'ja' ? 'いいね' : 'Like'}
           >
-            <Heart size={16} className={isLiked ? 'fill-red-600' : ''} />
+            <Heart size={14} className={isLiked ? 'fill-red-500' : ''} />
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleBookmark(latestPost.id);
-            }}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded transition-colors ${
-              isBookmarked
-                ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            onClick={(e) => { e.stopPropagation(); onToggleBookmark(latestPost.id); }}
+            className={`p-1.5 rounded-lg transition-colors ${
+              isBookmarked ? 'bg-amber-50 text-amber-600' : 'bg-[#f5ede0] text-[#a07850] hover:bg-amber-50 hover:text-amber-500'
             }`}
             title={language === 'ja' ? 'ブックマーク' : 'Bookmark'}
           >
-            <Bookmark size={16} className={isBookmarked ? 'fill-yellow-600' : ''} />
+            <Bookmark size={14} className={isBookmarked ? 'fill-amber-600' : ''} />
+          </button>
+          <button
+            onClick={() => onViewReviews(aggregated)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-[#3d1f00] text-[#e8d5b0] text-xs rounded-lg hover:bg-[#2a1200] transition-colors"
+          >
+            <Eye size={13} />
+            {language === 'ja' ? '詳細を見る' : 'View Details'}
           </button>
         </div>
-
-        <button
-          onClick={() => onViewReviews(aggregated)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
-        >
-          <Eye size={16} />
-          {language === 'ja' ? '詳細を見る' : 'View Details'}
-        </button>
       </div>
     </div>
   );
