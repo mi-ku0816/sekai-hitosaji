@@ -20,6 +20,7 @@ import { AdCarousel } from './components/AdCarousel';
 import { isAdmin } from './admin';
 import { logSearch } from './searchLog';
 import { CategoryIllustration } from './components/CategoryIllustration';
+import { withBase } from './assetPath';
 import { Condiment, User, AggregatedCondiment } from './types';
 import { aggregateCondiments } from './utils/aggregateCondiments';
 import { Language, t, CATEGORY_KEYS } from './i18n/translations';
@@ -222,7 +223,7 @@ export default function App() {
       const dataVersion = localStorage.getItem('condimentsVersion');
 
     // Check if we need to migrate old data
-    if (stored && dataVersion === '4.2') {
+    if (stored && dataVersion === '4.3') {
       try {
         const parsed = JSON.parse(stored);
         // Verify data structure
@@ -569,8 +570,14 @@ export default function App() {
           createdAt: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString()
         }
       ];
-      setCondiments(sampleData);
-      localStorage.setItem('condimentsVersion', '4.2');
+      // 画像パスに配信先の base を付与（GitHub Pages のサブパス対応）
+      const withBasePaths = sampleData.map(c => ({
+        ...c,
+        imageUrl: withBase(c.imageUrl) as string,
+        dishImageUrl: withBase(c.dishImageUrl),
+      }));
+      setCondiments(withBasePaths);
+      localStorage.setItem('condimentsVersion', '4.3');
       }
     };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { Language } from '../i18n/translations';
+import { withBase } from '../assetPath';
 
 interface Ad {
   id: string;
@@ -83,7 +84,7 @@ export function AdCarousel({ language }: AdCarouselProps) {
           <div className="flex items-center h-28 sm:h-32">
             {/* Image */}
             <div className="h-full w-28 sm:w-40 flex-shrink-0 bg-white flex items-center justify-center p-1.5">
-              <img src={ad.imageUrl} alt={ad.title} className="w-full h-full object-contain" />
+              <img src={withBase(ad.imageUrl)} alt={ad.title} className="w-full h-full object-contain" />
             </div>
             {/* Text */}
             <div className="flex-1 px-4 py-3 min-w-0">
