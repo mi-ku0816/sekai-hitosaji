@@ -1,14 +1,12 @@
 import { Layers } from 'lucide-react';
 import { Language, t, CATEGORY_KEYS } from '../i18n/translations';
-import { CATEGORY_IMAGES, CATEGORY_EMOJI } from '../categoryImages';
+import { CategoryIllustration } from './CategoryIllustration';
 
 interface CategoryGridProps {
   selectedCategory: string;
   onSelectCategory: (category: string) => void;
   language: Language;
 }
-
-const categoryEmoji = CATEGORY_EMOJI;
 
 const categoryAccents: Record<string, { bg: string; border: string }> = {
   '醤油':      { bg: 'bg-[#f5e8d0]', border: 'border-[#c17f3a]' },
@@ -66,7 +64,6 @@ export function CategoryGrid({ selectedCategory, onSelectCategory, language }: C
 
         {categories.map((category) => {
           const accent = categoryAccents[category] ?? { bg: 'bg-[#ede8e0]', border: 'border-[#a09080]' };
-          const emoji = categoryEmoji[category] ?? '🧂';
           const isSelected = selectedCategory === category;
 
           return (
@@ -80,14 +77,10 @@ export function CategoryGrid({ selectedCategory, onSelectCategory, language }: C
               }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-colors overflow-hidden ${
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors overflow-hidden ${
                   isSelected ? 'bg-white/20' : 'bg-white'
                 }`}>
-                  {CATEGORY_IMAGES[category] ? (
-                    <img src={CATEGORY_IMAGES[category]} alt={category} className="w-full h-full object-contain p-0.5" />
-                  ) : (
-                    emoji
-                  )}
+                  <CategoryIllustration category={category} className="w-full h-full p-0.5" />
                 </div>
                 <span className={`font-bold text-xs leading-tight text-center ${isSelected ? 'text-white' : 'text-[#3d1f00]'}`}>
                   {CATEGORY_KEYS[category] ? t(language, CATEGORY_KEYS[category]) : category}

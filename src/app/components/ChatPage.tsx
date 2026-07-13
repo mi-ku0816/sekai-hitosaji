@@ -244,11 +244,12 @@ export function ChatPage({ onClose, language, condiments, onViewCondiment }: Cha
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50">
-      <div className="bg-[#faf7f2] w-full max-w-md h-[92vh] flex flex-col rounded-t-2xl shadow-2xl border-t border-[#e2d5c0]">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-stretch sm:items-end justify-center z-50">
+      <div className="bg-[#faf7f2] w-full max-w-md h-[100dvh] sm:h-[92vh] max-h-[100dvh] flex flex-col sm:rounded-t-2xl shadow-2xl border-t border-[#e2d5c0]">
 
         {/* Header */}
-        <div className="bg-[#3d1f00] px-4 py-3 flex items-center justify-between rounded-t-2xl flex-shrink-0">
+        <div className="bg-[#3d1f00] px-4 py-3 flex items-center justify-between sm:rounded-t-2xl flex-shrink-0"
+             style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-[#c17f3a] rounded-full flex items-center justify-center shadow">
               <Bot size={20} className="text-white" />

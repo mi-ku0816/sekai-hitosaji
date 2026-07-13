@@ -19,7 +19,7 @@ import { ShareModal } from './components/ShareModal';
 import { AdCarousel } from './components/AdCarousel';
 import { isAdmin } from './admin';
 import { logSearch } from './searchLog';
-import { CATEGORY_IMAGES, CATEGORY_EMOJI } from './categoryImages';
+import { CategoryIllustration } from './components/CategoryIllustration';
 import { Condiment, User, AggregatedCondiment } from './types';
 import { aggregateCondiments } from './utils/aggregateCondiments';
 import { Language, t, CATEGORY_KEYS } from './i18n/translations';
@@ -1059,22 +1059,14 @@ export default function App() {
               </div>
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {['醤油', '味噌', '塩', '酢', '油', 'スパイス', 'ソース', '砂糖', 'ドレッシング', 'タレ', 'だし', '辛味', 'ハーブ', '柑橘'].map((category) => {
-                  // カテゴリ専用画像 → なければ掲載商品の画像 → なければ絵文字
-                  const mappedImage = CATEGORY_IMAGES[category];
-                  const fallbackImage = condiments.find(c => c.category === category)?.imageUrl;
-                  const image = mappedImage || fallbackImage;
                   return (
                     <button
                       key={category}
                       onClick={() => { setFilterCategory(category); handleTabChange('search'); }}
                       className="flex flex-col items-center gap-1.5 flex-shrink-0 group"
                     >
-                      <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-white border border-[#e2d5c0] group-hover:border-[#c17f3a] transition-colors flex items-center justify-center p-1">
-                        {image ? (
-                          <img src={image} alt={category} className="w-full h-full object-contain" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-3xl bg-[#fdf5ea]">{CATEGORY_EMOJI[category] ?? '🧂'}</div>
-                        )}
+                      <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-[#fdf5ea] border border-[#e2d5c0] group-hover:border-[#c17f3a] transition-colors flex items-center justify-center p-1.5">
+                        <CategoryIllustration category={category} className="w-full h-full" />
                       </div>
                       <span className="text-xs font-medium text-[#7c4a1e] group-hover:text-[#3d1f00] transition-colors">{t(language, CATEGORY_KEYS[category])}</span>
                     </button>
@@ -1152,7 +1144,7 @@ export default function App() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className={`grid gap-3 sm:gap-6 ${isMobileView ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'}`}>
             {(activeTab === 'home' && !committedSearch
               ? [...filteredAggregated].sort((a, b) => {
                   const hasPrefs = Object.keys(preferredCategories).length > 0;
