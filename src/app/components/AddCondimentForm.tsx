@@ -72,7 +72,8 @@ export function AddCondimentForm({ onAdd, onClose, language, condiments, userId,
   });
   const [recommendedDishes, setRecommendedDishes] = useState<string[]>(editingCondiment?.recommendedDishes ?? []);
   const [newDish, setNewDish] = useState('');
-  const [pairingCondiments, setPairingCondiments] = useState<string[]>([]);
+  const [pairingCondiments, setPairingCondiments] = useState<string[]>(editingCondiment?.pairingCondiments ?? []);
+  const [newPairing, setNewPairing] = useState('');
   const [showPairingPicker, setShowPairingPicker] = useState(false);
   const [pairingSearch, setPairingSearch] = useState('');
   const [pairingCategory, setPairingCategory] = useState('すべて');
@@ -101,12 +102,16 @@ export function AddCondimentForm({ onAdd, onClose, language, condiments, userId,
     const finalDishes = pendingDish && !recommendedDishes.includes(pendingDish)
       ? [...recommendedDishes, pendingDish]
       : recommendedDishes;
+    const pendingPairing = newPairing.trim();
+    const finalPairings = pendingPairing && !pairingCondiments.includes(pendingPairing)
+      ? [...pairingCondiments, pendingPairing]
+      : pairingCondiments;
     if (formData.name && formData.description && formData.origin && formData.imageUrl) {
       onAdd({
         ...formData,
         dishImageUrl: formData.dishImageUrl || undefined,
         recommendedDishes: finalDishes,
-        pairingCondiments,
+        pairingCondiments: finalPairings,
         tasteProfile
       });
       onClose();
@@ -126,6 +131,14 @@ export function AddCondimentForm({ onAdd, onClose, language, condiments, userId,
 
   const removePairing = (name: string) => {
     setPairingCondiments(pairingCondiments.filter(p => p !== name));
+  };
+
+  const addPairing = () => {
+    const v = newPairing.trim();
+    if (v && !pairingCondiments.includes(v)) {
+      setPairingCondiments(prev => [...prev, v]);
+      setNewPairing('');
+    }
   };
 
   const handleImageSearch = async () => {
@@ -483,9 +496,28 @@ export function AddCondimentForm({ onAdd, onClose, language, condiments, userId,
             </label>
             <p className="text-xs text-gray-500 mb-2">
               {language === 'ja'
-                ? '投稿済みの調味料一覧から選択できます'
-                : 'Select from the list of posted condiments'}
+                ? '自由に入力するか、投稿済みの一覧から選べます'
+                : 'Type freely, or pick from posted condiments'}
             </p>
+
+            {/* 自由入力欄 */}
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={newPairing}
+                onChange={(e) => setNewPairing(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPairing())}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+                placeholder={language === 'ja' ? '例: 醤油、オリーブオイル など' : 'e.g., soy sauce, olive oil'}
+              />
+              <button
+                type="button"
+                onClick={addPairing}
+                className="px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
 
             {/* 選択済みタグ */}
             {pairingCondiments.length > 0 && (
