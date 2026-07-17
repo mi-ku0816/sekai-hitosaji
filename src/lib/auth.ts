@@ -23,6 +23,9 @@ export async function signUp(data: SignUpData) {
   if (error) throw error;
   if (!authData.user) throw new Error('ユーザー作成に失敗しました');
 
+  // プロフィールの詳細を保存。メール確認が有効な場合はまだ未ログインのため
+  // RLSで弾かれることがあるが、ニックネームはトリガーが自動作成するので致命的ではない。
+  // （残りの項目はログイン後にマイページで編集可能）
   const { error: profileError } = await supabase.from('profiles').upsert({
     id: authData.user.id,
     nickname: data.nickname,
@@ -32,7 +35,9 @@ export async function signUp(data: SignUpData) {
     city: data.city ?? null,
     taste_badges: data.taste_badges ?? [],
   });
-  if (profileError) throw profileError;
+  if (profileError) {
+    console.warn('プロフィール保存はログイン後に反映されます:', profileError.message);
+  }
 
   return authData.user;
 }

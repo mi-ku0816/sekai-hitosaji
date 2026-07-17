@@ -49,7 +49,7 @@ export function LoginModal({ onClose, onSuccess }: Props) {
     } catch (err: any) {
       setError(err.message === 'Invalid login credentials'
         ? 'メールアドレスまたはパスワードが正しくありません'
-        : err.message);
+        : (err?.message || err?.error_description || 'ログインに失敗しました'));
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ export function LoginModal({ onClose, onSuccess }: Props) {
     } catch (err: any) {
       setError(err.message === 'User already registered'
         ? 'このメールアドレスは既に登録されています'
-        : err.message);
+        : (err?.message || err?.error_description || '登録に失敗しました'));
     } finally {
       setLoading(false);
     }
