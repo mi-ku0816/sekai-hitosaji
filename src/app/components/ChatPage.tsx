@@ -133,12 +133,15 @@ async function tryModel(url: string, prompt: string, systemPrompt: string): Prom
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nユーザーの質問: ${prompt}` }] }],
-      generationConfig: { maxOutputTokens: 512, temperature: 0.7 },
+      generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
     }),
   });
   if (res.ok) {
     const data = await res.json();
-    return { ok: true, text: data.candidates?.[0]?.content?.parts?.[0]?.text ?? '回答を取得できませんでした。' };
+    // 回答が複数パートに分かれることがあるので全部つなげる
+    const parts = data.candidates?.[0]?.content?.parts ?? [];
+    const text = parts.map((p: { text?: string }) => p.text ?? '').join('').trim();
+    return { ok: true, text: text || '回答を取得できませんでした。もう一度お試しください。' };
   }
   const err = await res.json().catch(() => ({}));
   const message = err?.error?.message || `HTTP ${res.status}`;
