@@ -8,7 +8,8 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ condimentName, language, onClose }: ShareModalProps) {
-  const siteUrl = window.location.origin;
+  // GitHub Pages ではサブパス（/sekai-hitosaji/）配信のため、base を含めた正しいURLを共有する
+  const siteUrl = window.location.origin + import.meta.env.BASE_URL;
   const shareText = language === 'ja'
     ? `「${condimentName}」を世界のひとさじに投稿しました！🌏`
     : `I posted "${condimentName}" on A Spoonful of the World! 🌏`;
