@@ -13,11 +13,16 @@ export interface SignUpData {
 }
 
 export async function signUp(data: SignUpData) {
+  // GitHub Pages はサブパス（/sekai-hitosaji/）配信のため、確認メールのリンク先を
+  // 現在のオリジン＋baseパスに明示しないと Supabase の Site URL（既定値）に飛ばされ 404 になる
+  const emailRedirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
+
   const { data: authData, error } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
     options: {
       data: { nickname: data.nickname },
+      emailRedirectTo,
     },
   });
   if (error) throw error;
