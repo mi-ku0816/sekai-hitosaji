@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, User as UserIcon, Shield, MessageCircle, Home, Grid, TrendingUp, MapPin, Users, Sparkles, Trophy, Menu, X as XIcon, Star, Smartphone, Monitor, ChevronLeft } from 'lucide-react';
+import { Plus, Search, User as UserIcon, Shield, MessageCircle, Home, Grid, TrendingUp, MapPin, Users, Sparkles, Trophy, Menu, X as XIcon, Star, ChevronLeft } from 'lucide-react';
 import { CondimentCard } from './components/CondimentCard';
 import { AddCondimentForm } from './components/AddCondimentForm';
 import { CondimentReviews } from './components/CondimentReviews';
@@ -40,7 +40,6 @@ export default function App() {
   const [showCombination, setShowCombination] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'search' | 'trends' | 'ranking'>('home');
   const [showNavMenu, setShowNavMenu] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(false);
   const [condiments, setCondiments] = useState<Condiment[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingCondiment, setEditingCondiment] = useState<Condiment | null>(null);
@@ -814,7 +813,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#faf7f2]">
-      <div className={`min-h-screen relative pb-20 sm:pb-0 bg-[#faf7f2] transition-all duration-300 ${isMobileView ? 'max-w-sm mx-auto shadow-2xl' : 'max-w-7xl mx-auto'}`}>
+      <div className="min-h-screen relative pb-20 sm:pb-0 bg-[#faf7f2] transition-all duration-300 max-w-7xl mx-auto">
       <header className="bg-[#faf7f2] border-b border-[#e2d5c0] sticky top-0 z-30">
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
@@ -835,13 +834,6 @@ export default function App() {
               <option value="es">🇪🇸 Español</option>
               <option value="vi">🇻🇳 Tiếng Việt</option>
             </select>
-            <button
-              onClick={() => setIsMobileView(!isMobileView)}
-              className="flex items-center gap-1 p-1.5 bg-[#ede4d3] text-[#7c4a1e] rounded-lg hover:bg-[#e2d5c0] transition-colors text-xs"
-              title={isMobileView ? (language === 'ja' ? 'PC表示に切替' : 'Switch to PC view') : (language === 'ja' ? 'スマホ表示に切替' : 'Switch to mobile view')}
-            >
-              {isMobileView ? <Monitor size={16} /> : <Smartphone size={16} />}
-            </button>
             {isAdmin(currentUser) && (
               <button
                 onClick={() => setShowAdminPanel(true)}
@@ -1159,7 +1151,7 @@ export default function App() {
             </button>
           </div>
         ) : (
-          <div className={`grid gap-3 sm:gap-6 ${isMobileView ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'}`}>
+          <div className="grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {(activeTab === 'home' && !committedSearch
               ? [...filteredAggregated].sort((a, b) => {
                   const hasPrefs = Object.keys(preferredCategories).length > 0;

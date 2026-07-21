@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { X, User as UserIcon, Mail, MapPin, Calendar, Star, Heart, Bookmark, Trash2, Pencil, Check } from 'lucide-react';
+import { X, User as UserIcon, Mail, MapPin, Calendar, Star, Heart, Bookmark, Trash2, Pencil, Check, LogOut } from 'lucide-react';
 import { User, Condiment, TasteBadge, PREFECTURES } from '../types';
 import { Language, t, CATEGORY_KEYS, PURCHASE_LOCATION_KEYS } from '../i18n/translations';
+import { signOut } from '../../lib/auth';
 
 const TASTE_BADGE_OPTIONS: TasteBadge[] = [
   '辛党', '甘党', '塩味好き', '酸味好き', '苦味好き', '旨味好き',
-  '舌が肥えている', 'グルメ', '健康志向', '伝統派', '冒険派', '万能型',
-  'スパイスマニア', '発酵食品好き', '無添加派', 'オーガニック志向',
+  'グルメ', '健康志向', '伝統派', '冒険派', '万能型',
+  'スパイスマニア', '発酵食品好き', '無添加派',
   '減塩派', '糖質控えめ', '和食派', '洋食派', '中華好き', 'エスニック好き',
   '本格派', '時短重視', 'コスパ重視', '高級志向', '地産地消', '希少品コレクター',
   '調味料オタク', '料理好き', '素材重視', '香り重視', '色彩重視', '食感重視',
@@ -183,9 +184,18 @@ export function MyPage({ user, posts, likedPosts, bookmarkedPosts, onClose, onVi
             <h2 className="text-2xl font-semibold">{t(language, 'myPage')}</h2>
             <p className="text-sm text-gray-500 mt-1">{user.nickname}</p>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => { signOut(); onClose(); }}
+              className="flex items-center gap-1 px-3 py-1.5 text-gray-500 hover:text-red-600 text-sm rounded-lg hover:bg-red-50 transition-colors"
+            >
+              <LogOut size={15} />
+              {language === 'ja' ? 'ログアウト' : 'Sign out'}
+            </button>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         <div className="p-6">
