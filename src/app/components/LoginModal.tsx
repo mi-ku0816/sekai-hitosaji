@@ -10,6 +10,19 @@ const TASTE_BADGES = [
   '減塩派','糖質控えめ','和食派','洋食派','中華好き','エスニック好き',
 ];
 
+const TERMS_SECTIONS: { title: string; body?: string; list?: string[]; contact?: boolean }[] = [
+  { title: '第1条（目的）', body: '本サービス「世界のひとさじ」（以下「本サービス」）は、世界各国の調味料に関する情報をユーザーが投稿・共有し、閲覧・検索できるプラットフォームです。ユーザーは本規約に同意の上、本サービスを利用するものとします。' },
+  { title: '第2条（投稿コンテンツ）', body: 'ユーザーは、文章、画像、動画、レビューその他の情報（以下「投稿コンテンツ」）を投稿できます。投稿者は、投稿コンテンツについて必要な権利を有し、または適法な利用許諾を得ていることを保証するものとします。' },
+  { title: '第3条（禁止事項）', list: ['他者の著作権、商標権、肖像権、プライバシー権その他の権利を侵害する行為', 'メーカー公式サイト、ECサイト、カタログ、雑誌等から無断転載した画像の投稿', '虚偽または誤解を招く情報の投稿', '誹謗中傷、差別的表現、嫌がらせ行為', '法令または公序良俗に反する行為', 'スパム投稿、広告投稿、営利目的の不正利用', 'システムへの不正アクセス', 'その他、運営者が不適切と判断する行為'] },
+  { title: '第4条（投稿コンテンツの利用許諾）', body: 'ユーザーは、投稿コンテンツについて著作権を保持します。ただしユーザーは運営者に対し、本サービスの運営・改善・広報・研究開発・マーケティング分析を目的として、投稿コンテンツを無償かつ非独占的に利用、複製、編集、公開、翻訳できる権利を許諾するものとします。' },
+  { title: '第5条（AI生成コンテンツ）', body: 'AI技術により生成された画像または文章を投稿する場合、ユーザーは可能な限りその旨を明示するものとします。AI生成コンテンツについても第三者の権利を侵害しないことを保証するものとします。' },
+  { title: '第6条（コンテンツの削除）', body: '運営者は規約違反、権利侵害申告、法令上の要請があった場合、事前通知なく投稿コンテンツを削除または非公開にすることができます。' },
+  { title: '第7条（個人情報の取り扱い）', body: 'ユーザー登録時に取得する年齢・性別・居住地は、統計分析・サービス改善の目的にのみ利用し、第三者に開示しません。ニックネームおよび味覚バッジは、投稿とともに他のユーザーに公開されます。' },
+  { title: '第8条（著作権ポリシー）', body: '投稿者は自身が権利を有するコンテンツのみを投稿してください。他サイトからの無断転載、雑誌・書籍のスキャン画像、他者が撮影した画像の無断使用は禁止します。権利侵害を発見した場合は下記窓口へご連絡ください。', contact: true },
+  { title: '第9条（免責事項）', body: '掲載情報はユーザー投稿を含みます。原材料、栄養成分、アレルギー情報等については必ずメーカー公式情報をご確認ください。本サービスの情報に基づいて生じた損害について、運営者は責任を負いません。' },
+  { title: '第10条（準拠法・管轄）', body: '本規約は日本法に準拠します。本サービスに関して紛争が生じた場合、運営者所在地を管轄する裁判所を第一審の専属的合意管轄裁判所とします。' },
+];
+
 interface Props {
   onClose: () => void;
   onSuccess: () => void;
@@ -32,6 +45,7 @@ export function LoginModal({ onClose, onSuccess }: Props) {
   const [prefecture, setPrefecture] = useState('');
   const [city, setCity] = useState('');
   const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const toggleBadge = (badge: string) => {
     setSelectedBadges(prev =>
@@ -60,6 +74,7 @@ export function LoginModal({ onClose, onSuccess }: Props) {
     setError('');
     if (!nickname.trim()) { setError('ニックネームを入力してください'); return; }
     if (password.length < 6) { setError('パスワードは6文字以上で入力してください'); return; }
+    if (!agreedToTerms) { setError('利用規約に同意してください'); return; }
     setLoading(true);
     try {
       await signUp({
@@ -215,11 +230,42 @@ export function LoginModal({ onClose, onSuccess }: Props) {
                   ))}
                 </div>
               </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-1">利用規約</label>
+                <div className="border rounded-lg p-3 max-h-40 overflow-y-auto space-y-3 bg-gray-50 text-xs text-gray-700 leading-relaxed">
+                  {TERMS_SECTIONS.map(({ title, body, list, contact }) => (
+                    <div key={title}>
+                      <p className="font-bold text-gray-800 mb-1">{title}</p>
+                      {body && <p>{body}</p>}
+                      {list && (
+                        <ol className="list-decimal list-inside space-y-0.5">
+                          {list.map((item, i) => <li key={i}>{item}</li>)}
+                        </ol>
+                      )}
+                      {contact && (
+                        <p className="mt-1 text-gray-500">【権利侵害申告窓口】copyright@world-condiment.example.com</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <label className="flex items-start gap-2 mt-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={e => setAgreedToTerms(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 accent-orange-500 flex-shrink-0"
+                  />
+                  <span className="text-sm text-gray-700">
+                    上記の利用規約に同意します <span className="text-orange-500">*</span>
+                  </span>
+                </label>
+              </div>
             </>
           )}
 
           <button
-            type="submit" disabled={loading}
+            type="submit" disabled={loading || (mode === 'signup' && !agreedToTerms)}
             className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             {loading && <Loader2 size={16} className="animate-spin" />}

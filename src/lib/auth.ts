@@ -55,31 +55,37 @@ export async function signOut() {
 export async function getProfile(userId: string): Promise<User | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('*, profile_private(age, gender, prefecture, city)')
     .eq('id', userId)
     .single();
   if (error || !data) return null;
+
+  const priv = Array.isArray(data.profile_private) ? data.profile_private[0] : data.profile_private;
 
   return {
     id: data.id,
     nickname: data.nickname,
     email: '',
-    age: data.age ?? 0,
-    prefecture: data.prefecture ?? '',
-    city: data.city ?? '',
-    gender: (data.gender as User['gender']) ?? '回答しない',
+    age: priv?.age ?? 0,
+    prefecture: priv?.prefecture ?? '',
+    city: priv?.city ?? '',
+    gender: (priv?.gender as User['gender']) ?? '回答しない',
     tasteBadges: (data.taste_badges ?? []) as User['tasteBadges'],
   };
 }
 
 export async function updateProfile(userId: string, updates: Partial<SignUpData>) {
-  const { error } = await supabase.from('profiles').update({
+  const { error: profileError } = await supabase.from('profiles').update({
     nickname: updates.nickname,
+    taste_badges: updates.taste_badges,
+  }).eq('id', userId);
+  if (profileError) throw profileError;
+
+  const { error: privateError } = await supabase.from('profile_private').update({
     age: updates.age,
     gender: updates.gender,
     prefecture: updates.prefecture,
     city: updates.city,
-    taste_badges: updates.taste_badges,
   }).eq('id', userId);
-  if (error) throw error;
+  if (privateError) throw privateError;
 }

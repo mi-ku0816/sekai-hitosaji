@@ -3,17 +3,22 @@
 -- Supabase ダッシュボード > SQL Editor で実行してください
 -- =========================================================
 
--- ① プロフィールテーブル (auth.users と 1:1 対応)
+-- ① プロフィールテーブル (auth.users と 1:1 対応、公開情報のみ)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id          UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   nickname    TEXT NOT NULL,
-  age         INTEGER,
-  gender      TEXT CHECK (gender IN ('男性','女性','その他','回答しない')),
-  prefecture  TEXT,
-  city        TEXT,
   taste_badges TEXT[] DEFAULT '{}',
   avatar_url  TEXT,
   created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ①' 非公開プロフィール情報（年齢・性別・居住地）。本人と管理者のみ閲覧可能
+CREATE TABLE IF NOT EXISTS public.profile_private (
+  id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE PRIMARY KEY,
+  age        INTEGER,
+  gender     TEXT CHECK (gender IN ('男性','女性','その他','回答しない')),
+  prefecture TEXT,
+  city       TEXT
 );
 
 -- ② 調味料テーブル
@@ -77,17 +82,27 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 -- Row Level Security (RLS)
 -- =========================================================
 
-ALTER TABLE public.profiles      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profile_private ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.condiments     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.likes          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookmarks      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comments       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications  ENABLE ROW LEVEL SECURITY;
 
--- profiles: 誰でも読める / 本人のみ書ける
+-- profiles: 誰でも読める（公開情報のみ） / 本人のみ書ける
 CREATE POLICY "profiles_select_all"  ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "profiles_insert_self" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "profiles_update_self" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+-- profile_private: 本人または管理者のみ閲覧可能 / 本人のみ書ける
+-- 管理者メールは src/app/admin.ts の ADMIN_EMAILS と揃えてください
+CREATE POLICY "profile_private_select_self_or_admin" ON public.profile_private
+  FOR SELECT USING (
+    auth.uid() = id OR (auth.jwt() ->> 'email') = 'do.man.26.shibaura@gmail.com'
+  );
+CREATE POLICY "profile_private_insert_self" ON public.profile_private FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "profile_private_update_self" ON public.profile_private FOR UPDATE USING (auth.uid() = id);
 
 -- condiments: 誰でも読める / ログイン済みで投稿 / 本人のみ削除
 CREATE POLICY "condiments_select_all"    ON public.condiments FOR SELECT USING (true);
@@ -121,20 +136,26 @@ CREATE POLICY "notifications_insert_auth" ON public.notifications FOR INSERT WIT
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, nickname, age, gender, prefecture, city, taste_badges)
+  INSERT INTO public.profiles (id, nickname, taste_badges)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'nickname', split_part(NEW.email, '@', 1)),
-    (NEW.raw_user_meta_data->>'age')::INTEGER,
-    NEW.raw_user_meta_data->>'gender',
-    NEW.raw_user_meta_data->>'prefecture',
-    NEW.raw_user_meta_data->>'city',
     CASE
       WHEN jsonb_typeof(NEW.raw_user_meta_data->'taste_badges') = 'array'
       THEN ARRAY(SELECT jsonb_array_elements_text(NEW.raw_user_meta_data->'taste_badges'))
       ELSE '{}'::TEXT[]
     END
   );
+
+  INSERT INTO public.profile_private (id, age, gender, prefecture, city)
+  VALUES (
+    NEW.id,
+    (NEW.raw_user_meta_data->>'age')::INTEGER,
+    NEW.raw_user_meta_data->>'gender',
+    NEW.raw_user_meta_data->>'prefecture',
+    NEW.raw_user_meta_data->>'city'
+  );
+
   RETURN NEW;
 END;
 $$;

@@ -3,19 +3,23 @@ import type { Condiment, TasteProfile, User } from '../app/types';
 
 // ===== ユーザー =====
 
+// 管理者専用。profile_private は RLS で本人または管理者のみ閲覧可能。
 export async function fetchAllUsers(): Promise<User[]> {
-  const { data, error } = await supabase.from('profiles').select('*');
+  const { data, error } = await supabase.from('profiles').select('*, profile_private(age, gender, prefecture, city)');
   if (error) throw error;
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    nickname: row.nickname,
-    email: '',
-    age: row.age ?? 0,
-    prefecture: row.prefecture ?? '',
-    city: row.city ?? '',
-    gender: (row.gender ?? '回答しない') as User['gender'],
-    tasteBadges: (row.taste_badges ?? []) as User['tasteBadges'],
-  }));
+  return (data ?? []).map((row: any) => {
+    const priv = Array.isArray(row.profile_private) ? row.profile_private[0] : row.profile_private;
+    return {
+      id: row.id,
+      nickname: row.nickname,
+      email: '',
+      age: priv?.age ?? 0,
+      prefecture: priv?.prefecture ?? '',
+      city: priv?.city ?? '',
+      gender: (priv?.gender ?? '回答しない') as User['gender'],
+      tasteBadges: (row.taste_badges ?? []) as User['tasteBadges'],
+    };
+  });
 }
 
 // ===== 調味料 =====

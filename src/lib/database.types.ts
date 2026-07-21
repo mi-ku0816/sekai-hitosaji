@@ -7,10 +7,6 @@ export interface Database {
         Row: {
           id: string;
           nickname: string;
-          age: number | null;
-          gender: string | null;
-          prefecture: string | null;
-          city: string | null;
           taste_badges: string[];
           avatar_url: string | null;
           created_at: string;
@@ -18,22 +14,36 @@ export interface Database {
         Insert: {
           id: string;
           nickname: string;
-          age?: number | null;
-          gender?: string | null;
-          prefecture?: string | null;
-          city?: string | null;
           taste_badges?: string[];
           avatar_url?: string | null;
           created_at?: string;
         };
         Update: {
           nickname?: string;
+          taste_badges?: string[];
+          avatar_url?: string | null;
+        };
+      };
+      profile_private: {
+        Row: {
+          id: string;
+          age: number | null;
+          gender: string | null;
+          prefecture: string | null;
+          city: string | null;
+        };
+        Insert: {
+          id: string;
           age?: number | null;
           gender?: string | null;
           prefecture?: string | null;
           city?: string | null;
-          taste_badges?: string[];
-          avatar_url?: string | null;
+        };
+        Update: {
+          age?: number | null;
+          gender?: string | null;
+          prefecture?: string | null;
+          city?: string | null;
         };
       };
       condiments: {
