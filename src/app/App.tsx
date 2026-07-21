@@ -17,6 +17,7 @@ import { LoginModal } from './components/LoginModal';
 import { NotificationBell } from './components/NotificationBell';
 import { ShareModal } from './components/ShareModal';
 import { AdCarousel } from './components/AdCarousel';
+import { CondimentMap } from './components/CondimentMap';
 import { isAdmin } from './admin';
 import { logSearch } from './searchLog';
 import { CategoryIllustration } from './components/CategoryIllustration';
@@ -1190,11 +1191,7 @@ export default function App() {
                 {language === 'ja' ? '世界の調味料マップ' : 'World Condiments Map'}
               </h3>
               <div className="aspect-video rounded-lg overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600&h=400&fit=crop"
-                  alt="World Map"
-                  className="w-full h-full object-cover opacity-70"
-                />
+                <CondimentMap condiments={condiments} language={language} />
               </div>
               <p className="text-xs text-[#7c4a1e] mt-3 pl-2">
                 {language === 'ja' ? '世界中から集まった調味料の産地を探索しましょう' : 'Explore condiment origins from around the world'}
