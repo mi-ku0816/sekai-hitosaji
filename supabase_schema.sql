@@ -121,8 +121,20 @@ CREATE POLICY "notifications_insert_auth" ON public.notifications FOR INSERT WIT
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, nickname)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'nickname', split_part(NEW.email, '@', 1)));
+  INSERT INTO public.profiles (id, nickname, age, gender, prefecture, city, taste_badges)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'nickname', split_part(NEW.email, '@', 1)),
+    (NEW.raw_user_meta_data->>'age')::INTEGER,
+    NEW.raw_user_meta_data->>'gender',
+    NEW.raw_user_meta_data->>'prefecture',
+    NEW.raw_user_meta_data->>'city',
+    CASE
+      WHEN jsonb_typeof(NEW.raw_user_meta_data->'taste_badges') = 'array'
+      THEN ARRAY(SELECT jsonb_array_elements_text(NEW.raw_user_meta_data->'taste_badges'))
+      ELSE '{}'::TEXT[]
+    END
+  );
   RETURN NEW;
 END;
 $$;

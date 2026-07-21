@@ -17,32 +17,26 @@ export async function signUp(data: SignUpData) {
   // 現在のオリジン＋baseパスに明示しないと Supabase の Site URL（既定値）に飛ばされ 404 になる
   const emailRedirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
 
+  // メール確認が有効な場合、確認完了までは未ログイン状態でRLSにより profiles への
+  // 直接書き込みができない。そのためプロフィール項目もユーザーメタデータとして渡し、
+  // auth.users 作成時のトリガー（handle_new_user）側で profiles に反映する。
   const { data: authData, error } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
     options: {
-      data: { nickname: data.nickname },
+      data: {
+        nickname: data.nickname,
+        age: data.age,
+        gender: data.gender,
+        prefecture: data.prefecture,
+        city: data.city,
+        taste_badges: data.taste_badges ?? [],
+      },
       emailRedirectTo,
     },
   });
   if (error) throw error;
   if (!authData.user) throw new Error('ユーザー作成に失敗しました');
-
-  // プロフィールの詳細を保存。メール確認が有効な場合はまだ未ログインのため
-  // RLSで弾かれることがあるが、ニックネームはトリガーが自動作成するので致命的ではない。
-  // （残りの項目はログイン後にマイページで編集可能）
-  const { error: profileError } = await supabase.from('profiles').upsert({
-    id: authData.user.id,
-    nickname: data.nickname,
-    age: data.age ?? null,
-    gender: data.gender ?? null,
-    prefecture: data.prefecture ?? null,
-    city: data.city ?? null,
-    taste_badges: data.taste_badges ?? [],
-  });
-  if (profileError) {
-    console.warn('プロフィール保存はログイン後に反映されます:', profileError.message);
-  }
 
   return authData.user;
 }
