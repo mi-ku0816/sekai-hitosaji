@@ -1,5 +1,22 @@
 import { supabase } from './supabase';
-import type { Condiment, TasteProfile } from '../app/types';
+import type { Condiment, TasteProfile, User } from '../app/types';
+
+// ===== ユーザー =====
+
+export async function fetchAllUsers(): Promise<User[]> {
+  const { data, error } = await supabase.from('profiles').select('*');
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    nickname: row.nickname,
+    email: '',
+    age: row.age ?? 0,
+    prefecture: row.prefecture ?? '',
+    city: row.city ?? '',
+    gender: (row.gender ?? '回答しない') as User['gender'],
+    tasteBadges: (row.taste_badges ?? []) as User['tasteBadges'],
+  }));
+}
 
 // ===== 調味料 =====
 

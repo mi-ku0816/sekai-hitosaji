@@ -26,7 +26,7 @@ import { aggregateCondiments } from './utils/aggregateCondiments';
 import { Language, t, CATEGORY_KEYS } from './i18n/translations';
 import { supabase } from '../lib/supabase';
 import { getProfile, signOut, updateProfile } from '../lib/auth';
-import { fetchCondiments, insertCondiment, updateCondiment, deleteCondiment, fetchLikedIds, toggleLike, fetchBookmarkedIds, toggleBookmark } from '../lib/database';
+import { fetchCondiments, insertCondiment, updateCondiment, deleteCondiment, fetchLikedIds, toggleLike, fetchBookmarkedIds, toggleBookmark, fetchAllUsers } from '../lib/database';
 
 export default function App() {
   const [language, setLanguage] = useState<Language>('ja');
@@ -836,7 +836,10 @@ export default function App() {
             </select>
             {isAdmin(currentUser) && (
               <button
-                onClick={() => setShowAdminPanel(true)}
+                onClick={() => {
+                  setShowAdminPanel(true);
+                  fetchAllUsers().then(setAllUsers).catch(err => console.error('ユーザー一覧の取得に失敗:', err));
+                }}
                 className="p-1.5 bg-[#ede4d3] text-[#7c4a1e] rounded-lg hover:bg-[#e2d5c0] transition-colors"
                 title={t(language, 'admin')}
               >
