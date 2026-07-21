@@ -39,7 +39,9 @@ export interface User {
   id: string;
   nickname: string;
   email: string;
-  age: number;
+  fullName?: string; // 管理者のみ取得可能・登録後編集不可
+  birthdate?: string; // YYYY-MM-DD、登録後編集不可
+  age: number; // birthdate から算出（取得できない場合は0）
   prefecture: string;
   city: string;
   gender: '男性' | '女性' | 'その他' | '回答しない';

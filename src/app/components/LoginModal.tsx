@@ -40,7 +40,8 @@ export function LoginModal({ onClose, onSuccess }: Props) {
 
   // 登録用
   const [nickname, setNickname] = useState('');
-  const [age, setAge] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [birthdate, setBirthdate] = useState('');
   const [gender, setGender] = useState('回答しない');
   const [prefecture, setPrefecture] = useState('');
   const [city, setCity] = useState('');
@@ -73,13 +74,16 @@ export function LoginModal({ onClose, onSuccess }: Props) {
     e.preventDefault();
     setError('');
     if (!nickname.trim()) { setError('ニックネームを入力してください'); return; }
+    if (!fullName.trim()) { setError('氏名を入力してください'); return; }
+    if (!birthdate) { setError('生年月日を入力してください'); return; }
     if (password.length < 6) { setError('パスワードは6文字以上で入力してください'); return; }
     if (!agreedToTerms) { setError('利用規約に同意してください'); return; }
     setLoading(true);
     try {
       await signUp({
         email, password, nickname,
-        age: age ? parseInt(age) : undefined,
+        fullName: fullName.trim(),
+        birthdate,
         gender, prefecture, city,
         taste_badges: selectedBadges,
       });
@@ -131,15 +135,27 @@ export function LoginModal({ onClose, onSuccess }: Props) {
           )}
 
           {mode === 'signup' && (
-            <div>
-              <label className="block text-sm font-semibold mb-1">ニックネーム <span className="text-orange-500">*</span></label>
-              <input
-                type="text" value={nickname} onChange={e => setNickname(e.target.value)}
-                placeholder="例: 調味料マスター"
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400"
-                required
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-semibold mb-1">ニックネーム <span className="text-orange-500">*</span></label>
+                <input
+                  type="text" value={nickname} onChange={e => setNickname(e.target.value)}
+                  placeholder="例: 調味料マスター"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">氏名 <span className="text-orange-500">*</span></label>
+                <input
+                  type="text" value={fullName} onChange={e => setFullName(e.target.value)}
+                  placeholder="例: 山田 太郎"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400"
+                  required
+                />
+                <p className="text-xs text-gray-400 mt-1">管理者のみが確認できます。登録後の変更はできません。</p>
+              </div>
+            </>
           )}
 
           <div>
@@ -176,11 +192,13 @@ export function LoginModal({ onClose, onSuccess }: Props) {
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-semibold mb-1">年齢</label>
-                  <input type="number" value={age} onChange={e => setAge(e.target.value)}
-                    placeholder="25" min="1" max="120"
+                  <label className="block text-sm font-semibold mb-1">生年月日 <span className="text-orange-500">*</span></label>
+                  <input type="date" value={birthdate} onChange={e => setBirthdate(e.target.value)}
+                    max={new Date().toISOString().slice(0, 10)}
                     className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400"
+                    required
                   />
+                  <p className="text-xs text-gray-400 mt-1">年齢は自動計算されます。登録後の変更はできません。</p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-1">性別</label>

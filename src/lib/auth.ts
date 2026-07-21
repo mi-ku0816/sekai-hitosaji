@@ -1,11 +1,13 @@
 import { supabase } from './supabase';
 import type { User } from '../app/types';
+import { calculateAge } from '../app/utils/age';
 
 export interface SignUpData {
   email: string;
   password: string;
   nickname: string;
-  age?: number;
+  fullName?: string;
+  birthdate?: string;
   gender?: string;
   prefecture?: string;
   city?: string;
@@ -26,7 +28,8 @@ export async function signUp(data: SignUpData) {
     options: {
       data: {
         nickname: data.nickname,
-        age: data.age,
+        full_name: data.fullName,
+        birthdate: data.birthdate,
         gender: data.gender,
         prefecture: data.prefecture,
         city: data.city,
@@ -55,7 +58,7 @@ export async function signOut() {
 export async function getProfile(userId: string): Promise<User | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('*, profile_private(age, gender, prefecture, city)')
+    .select('*, profile_private(birthdate, gender, prefecture, city)')
     .eq('id', userId)
     .single();
   if (error || !data) return null;
@@ -66,7 +69,8 @@ export async function getProfile(userId: string): Promise<User | null> {
     id: data.id,
     nickname: data.nickname,
     email: '',
-    age: priv?.age ?? 0,
+    birthdate: priv?.birthdate ?? undefined,
+    age: calculateAge(priv?.birthdate),
     prefecture: priv?.prefecture ?? '',
     city: priv?.city ?? '',
     gender: (priv?.gender as User['gender']) ?? '回答しない',
@@ -74,6 +78,7 @@ export async function getProfile(userId: string): Promise<User | null> {
   };
 }
 
+// 氏名・生年月日は登録後編集不可のため、ここでは更新しない
 export async function updateProfile(userId: string, updates: Partial<SignUpData>) {
   const { error: profileError } = await supabase.from('profiles').update({
     nickname: updates.nickname,
@@ -82,7 +87,6 @@ export async function updateProfile(userId: string, updates: Partial<SignUpData>
   if (profileError) throw profileError;
 
   const { error: privateError } = await supabase.from('profile_private').update({
-    age: updates.age,
     gender: updates.gender,
     prefecture: updates.prefecture,
     city: updates.city,

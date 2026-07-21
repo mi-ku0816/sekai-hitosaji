@@ -133,7 +133,6 @@ export function MyPage({ user, posts, likedPosts, bookmarkedPosts, onClose, onVi
   const [editForm, setEditForm] = useState({
     nickname: user.nickname,
     email: user.email ?? '',
-    age: String(user.age),
     gender: user.gender,
     prefecture: user.prefecture,
     city: user.city,
@@ -141,12 +140,11 @@ export function MyPage({ user, posts, likedPosts, bookmarkedPosts, onClose, onVi
   });
 
   const handleSave = () => {
-    if (!editForm.nickname || !editForm.age || !editForm.prefecture || !editForm.city) return;
+    if (!editForm.nickname || !editForm.prefecture || !editForm.city) return;
     onUpdateUser({
       ...user,
       nickname: editForm.nickname,
       email: editForm.email,
-      age: parseInt(editForm.age),
       gender: editForm.gender as User['gender'],
       prefecture: editForm.prefecture,
       city: editForm.city,
@@ -208,7 +206,7 @@ export function MyPage({ user, posts, likedPosts, bookmarkedPosts, onClose, onVi
               </h3>
               {!isEditing ? (
                 <button
-                  onClick={() => { setEditForm({ nickname: user.nickname, email: user.email ?? '', age: String(user.age), gender: user.gender, prefecture: user.prefecture, city: user.city, tasteBadges: [...user.tasteBadges] }); setIsEditing(true); }}
+                  onClick={() => { setEditForm({ nickname: user.nickname, email: user.email ?? '', gender: user.gender, prefecture: user.prefecture, city: user.city, tasteBadges: [...user.tasteBadges] }); setIsEditing(true); }}
                   className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 text-gray-600 text-sm rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <Pencil size={14} />
@@ -224,7 +222,7 @@ export function MyPage({ user, posts, likedPosts, bookmarkedPosts, onClose, onVi
                   </button>
                   <button
                     onClick={handleSave}
-                    disabled={!editForm.nickname || !editForm.age || !editForm.prefecture || !editForm.city || editForm.tasteBadges.length === 0}
+                    disabled={!editForm.nickname || !editForm.prefecture || !editForm.city || editForm.tasteBadges.length === 0}
                     className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:opacity-40 transition-colors"
                   >
                     <Check size={14} />
@@ -296,13 +294,9 @@ export function MyPage({ user, posts, likedPosts, bookmarkedPosts, onClose, onVi
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">{t(language, 'age')}</label>
-                    <input
-                      type="number"
-                      min="1" max="120"
-                      value={editForm.age}
-                      onChange={e => setEditForm(f => ({ ...f, age: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-                    />
+                    <p className="w-full px-3 py-2 text-sm text-gray-500 bg-gray-100 rounded-lg border border-gray-200">
+                      {user.age}{language === 'ja' ? '歳（生年月日は変更できません）' : ' years old (birthdate cannot be changed)'}
+                    </p>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">{t(language, 'gender')}</label>

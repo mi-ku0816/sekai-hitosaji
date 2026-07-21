@@ -1,19 +1,25 @@
 import { supabase } from './supabase';
 import type { Condiment, TasteProfile, User } from '../app/types';
+import { calculateAge } from '../app/utils/age';
 
 // ===== ユーザー =====
 
-// 管理者専用。profile_private は RLS で本人または管理者のみ閲覧可能。
+// 管理者専用。profile_private・profile_admin_only は RLS で本人（後者は管理者のみ）が閲覧可能。
 export async function fetchAllUsers(): Promise<User[]> {
-  const { data, error } = await supabase.from('profiles').select('*, profile_private(age, gender, prefecture, city)');
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*, profile_private(birthdate, gender, prefecture, city), profile_admin_only(full_name)');
   if (error) throw error;
   return (data ?? []).map((row: any) => {
     const priv = Array.isArray(row.profile_private) ? row.profile_private[0] : row.profile_private;
+    const adminOnly = Array.isArray(row.profile_admin_only) ? row.profile_admin_only[0] : row.profile_admin_only;
     return {
       id: row.id,
       nickname: row.nickname,
       email: '',
-      age: priv?.age ?? 0,
+      fullName: adminOnly?.full_name ?? undefined,
+      birthdate: priv?.birthdate ?? undefined,
+      age: calculateAge(priv?.birthdate),
       prefecture: priv?.prefecture ?? '',
       city: priv?.city ?? '',
       gender: (priv?.gender ?? '回答しない') as User['gender'],

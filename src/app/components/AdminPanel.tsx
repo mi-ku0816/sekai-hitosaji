@@ -127,6 +127,7 @@ export function AdminPanel({ users, condiments, onClose, language }: AdminPanelP
                   <thead>
                     <tr className="bg-gray-100 border-b">
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t(language, 'nickname')}</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{language === 'ja' ? '氏名' : 'Full Name'}</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t(language, 'age')}</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t(language, 'gender')}</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">{t(language, 'prefecture')}</th>
@@ -138,6 +139,7 @@ export function AdminPanel({ users, condiments, onClose, language }: AdminPanelP
                     {users.map(user => (
                       <tr key={user.id} className="border-b hover:bg-gray-50">
                         <td className="px-4 py-3 text-sm font-medium">{user.nickname}</td>
+                        <td className="px-4 py-3 text-sm">{user.fullName || <span className="text-gray-300">—</span>}</td>
                         <td className="px-4 py-3 text-sm">{user.age}{language === 'ja' ? '歳' : ''}</td>
                         <td className="px-4 py-3 text-sm">{user.gender}</td>
                         <td className="px-4 py-3 text-sm">{user.prefecture}</td>

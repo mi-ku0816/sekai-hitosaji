@@ -12,13 +12,21 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ①' 非公開プロフィール情報（年齢・性別・居住地）。本人と管理者のみ閲覧可能
+-- ①' 非公開プロフィール情報（生年月日・性別・居住地）。本人と管理者のみ閲覧可能
+--    生年月日は登録後変更不可（トリガーで保護、下部参照）。年齢は生年月日から都度算出する
 CREATE TABLE IF NOT EXISTS public.profile_private (
   id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE PRIMARY KEY,
-  age        INTEGER,
+  birthdate  DATE,
   gender     TEXT CHECK (gender IN ('男性','女性','その他','回答しない')),
   prefecture TEXT,
   city       TEXT
+);
+
+-- ①'' 氏名（管理者のみ閲覧可・編集不可）。書き込みポリシーを設けないことで
+--     登録時のトリガー以外からは一切変更できないようにする
+CREATE TABLE IF NOT EXISTS public.profile_admin_only (
+  id        UUID REFERENCES public.profiles(id) ON DELETE CASCADE PRIMARY KEY,
+  full_name TEXT
 );
 
 -- ② 調味料テーブル
@@ -84,6 +92,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 
 ALTER TABLE public.profiles       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profile_private ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profile_admin_only ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.condiments     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.likes          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookmarks      ENABLE ROW LEVEL SECURITY;
@@ -103,6 +112,10 @@ CREATE POLICY "profile_private_select_self_or_admin" ON public.profile_private
   );
 CREATE POLICY "profile_private_insert_self" ON public.profile_private FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "profile_private_update_self" ON public.profile_private FOR UPDATE USING (auth.uid() = id);
+
+-- profile_admin_only: 管理者のみ閲覧可能。書き込みポリシーなし＝トリガー以外変更不可
+CREATE POLICY "profile_admin_only_select_admin" ON public.profile_admin_only
+  FOR SELECT USING ((auth.jwt() ->> 'email') = 'do.man.26.shibaura@gmail.com');
 
 -- condiments: 誰でも読める / ログイン済みで投稿 / 本人のみ削除
 CREATE POLICY "condiments_select_all"    ON public.condiments FOR SELECT USING (true);
@@ -147,14 +160,17 @@ BEGIN
     END
   );
 
-  INSERT INTO public.profile_private (id, age, gender, prefecture, city)
+  INSERT INTO public.profile_private (id, birthdate, gender, prefecture, city)
   VALUES (
     NEW.id,
-    (NEW.raw_user_meta_data->>'age')::INTEGER,
+    NULLIF(NEW.raw_user_meta_data->>'birthdate', '')::DATE,
     NEW.raw_user_meta_data->>'gender',
     NEW.raw_user_meta_data->>'prefecture',
     NEW.raw_user_meta_data->>'city'
   );
+
+  INSERT INTO public.profile_admin_only (id, full_name)
+  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name');
 
   RETURN NEW;
 END;
@@ -164,6 +180,24 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- =========================================================
+-- トリガー: 生年月日を登録後に変更できないようにする
+-- =========================================================
+CREATE OR REPLACE FUNCTION public.prevent_birthdate_change()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.birthdate IS NOT NULL AND NEW.birthdate IS DISTINCT FROM OLD.birthdate THEN
+    RAISE EXCEPTION '生年月日は登録後に変更できません';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS prevent_birthdate_update ON public.profile_private;
+CREATE TRIGGER prevent_birthdate_update
+  BEFORE UPDATE ON public.profile_private
+  FOR EACH ROW EXECUTE FUNCTION public.prevent_birthdate_change();
 
 -- =========================================================
 -- トリガー: いいね時に通知を自動作成

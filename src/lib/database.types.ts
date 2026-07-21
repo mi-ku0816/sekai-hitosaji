@@ -27,24 +27,34 @@ export interface Database {
       profile_private: {
         Row: {
           id: string;
-          age: number | null;
+          birthdate: string | null;
           gender: string | null;
           prefecture: string | null;
           city: string | null;
         };
         Insert: {
           id: string;
-          age?: number | null;
+          birthdate?: string | null;
           gender?: string | null;
           prefecture?: string | null;
           city?: string | null;
         };
         Update: {
-          age?: number | null;
           gender?: string | null;
           prefecture?: string | null;
           city?: string | null;
         };
+      };
+      profile_admin_only: {
+        Row: {
+          id: string;
+          full_name: string | null;
+        };
+        Insert: {
+          id: string;
+          full_name?: string | null;
+        };
+        Update: Record<string, never>;
       };
       condiments: {
         Row: {
