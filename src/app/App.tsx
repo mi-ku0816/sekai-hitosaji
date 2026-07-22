@@ -1199,7 +1199,7 @@ export default function App() {
                 <MapPin size={16} className="text-[#c17f3a]" />
                 {language === 'ja' ? '世界の調味料マップ' : 'World Condiments Map'}
               </h3>
-              <div className="aspect-video rounded-lg overflow-hidden">
+              <div className="aspect-video rounded-lg overflow-hidden relative z-0">
                 <CondimentMap condiments={condiments} language={language} />
               </div>
               <p className="text-xs text-[#7c4a1e] mt-3 pl-2">
