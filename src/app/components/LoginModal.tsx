@@ -47,6 +47,7 @@ export function LoginModal({ onClose, onSuccess }: Props) {
   const [city, setCity] = useState('');
   const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [signupDone, setSignupDone] = useState(false);
 
   const toggleBadge = (badge: string) => {
     setSelectedBadges(prev =>
@@ -80,14 +81,20 @@ export function LoginModal({ onClose, onSuccess }: Props) {
     if (!agreedToTerms) { setError('利用規約に同意してください'); return; }
     setLoading(true);
     try {
-      await signUp({
+      const { needsEmailConfirmation } = await signUp({
         email, password, nickname,
         fullName: fullName.trim(),
         birthdate,
         gender, prefecture, city,
         taste_badges: selectedBadges,
       });
-      onSuccess();
+      if (needsEmailConfirmation) {
+        // メール確認待ち: 確認メール送信済みの画面を表示する
+        setSignupDone(true);
+      } else {
+        // メール確認が無効な場合はそのままログイン完了
+        onSuccess();
+      }
     } catch (err: any) {
       setError(err.message === 'User already registered'
         ? 'このメールアドレスは既に登録されています'
@@ -112,6 +119,30 @@ export function LoginModal({ onClose, onSuccess }: Props) {
           </button>
         </div>
 
+        {signupDone ? (
+          <div className="p-8 flex flex-col items-center text-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center">
+              <Mail size={28} className="text-green-500" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-[#3d1f00] mb-1">確認メールを送信しました</p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium text-[#7c4a1e]">{email}</span> 宛にメールをお送りしました。
+                メール内のリンクをクリックすると登録が完了し、そのままログイン状態になります。
+              </p>
+            </div>
+            <p className="text-xs text-gray-400">
+              メールが届かない場合は、迷惑メールフォルダもご確認ください。
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-colors"
+            >
+              閉じる
+            </button>
+          </div>
+        ) : (
+        <>
         <div className="flex border-b">
           <button
             className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${mode === 'login' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500'}`}
@@ -290,6 +321,8 @@ export function LoginModal({ onClose, onSuccess }: Props) {
             {mode === 'login' ? 'ログイン' : '登録する'}
           </button>
         </form>
+        </>
+        )}
       </div>
     </div>
   );

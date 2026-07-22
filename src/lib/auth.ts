@@ -41,7 +41,8 @@ export async function signUp(data: SignUpData) {
   if (error) throw error;
   if (!authData.user) throw new Error('ユーザー作成に失敗しました');
 
-  return authData.user;
+  // session が無い場合はメール確認待ち（確認リンクをクリックするまでログインされない）
+  return { user: authData.user, needsEmailConfirmation: !authData.session };
 }
 
 export async function signIn(email: string, password: string) {
