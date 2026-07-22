@@ -36,12 +36,16 @@ function resolveCoords(origin: string): [number, number] | null {
 interface Props {
   condiments: Condiment[];
   language: Language;
+  onSelectCondiment: (condiment: Condiment) => void;
 }
 
-export function CondimentMap({ condiments, language }: Props) {
+export function CondimentMap({ condiments, language, onSelectCondiment }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.CircleMarker[]>([]);
+  // ポップアップのクリックで常に最新のコールバックを呼べるよう ref で保持
+  const onSelectRef = useRef(onSelectCondiment);
+  onSelectRef.current = onSelectCondiment;
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -91,24 +95,57 @@ export function CondimentMap({ condiments, language }: Props) {
     markersRef.current.forEach(m => m.remove());
     markersRef.current = [];
 
-    const counts = new Map<string, number>();
+    // 地域（産地）ごとに調味料をまとめる
+    const byOrigin = new Map<string, Condiment[]>();
     condiments.forEach(c => {
-      counts.set(c.origin, (counts.get(c.origin) ?? 0) + 1);
+      const list = byOrigin.get(c.origin) ?? [];
+      list.push(c);
+      byOrigin.set(c.origin, list);
     });
 
-    counts.forEach((count, origin) => {
+    byOrigin.forEach((list, origin) => {
       const coords = resolveCoords(origin);
       if (!coords) return;
+
       const marker = L.circleMarker(coords, {
-        radius: 6 + Math.min(count, 10) * 1.5,
+        radius: 6 + Math.min(list.length, 10) * 1.5,
         color: '#7c4a1e',
         fillColor: '#c17f3a',
         fillOpacity: 0.75,
         weight: 2,
       }).addTo(map);
-      marker.bindPopup(
-        `<strong>${origin}</strong><br>${count}${language === 'ja' ? '件の調味料' : ' condiments'}`
-      );
+
+      // 同名の調味料は1件にまとめる（代表として最初の投稿を使う）
+      const seen = new Set<string>();
+      const uniqueCondiments = list.filter(c => {
+        if (seen.has(c.name)) return false;
+        seen.add(c.name);
+        return true;
+      });
+
+      // ポップアップの中身を DOM で組み立て、各調味料をクリックで詳細へ
+      const container = L.DomUtil.create('div');
+      container.style.cssText = 'min-width:170px; max-height:220px; overflow-y:auto;';
+
+      const heading = L.DomUtil.create('div', '', container);
+      heading.style.cssText = 'font-weight:bold; color:#3d1f00; margin-bottom:6px;';
+      heading.textContent = `${origin}（${uniqueCondiments.length}${language === 'ja' ? '種類' : ''}）`;
+
+      const listEl = L.DomUtil.create('div', '', container);
+      listEl.style.cssText = 'display:flex; flex-direction:column; gap:4px;';
+
+      uniqueCondiments.forEach(c => {
+        const btn = L.DomUtil.create('button', '', listEl);
+        btn.textContent = c.name;
+        btn.style.cssText = 'text-align:left; background:#fdf5ea; border:1px solid #e2d5c0; border-radius:6px; padding:5px 8px; cursor:pointer; font-size:12px; color:#3d1f00; line-height:1.3;';
+        L.DomEvent.on(btn, 'click', (e) => {
+          L.DomEvent.stop(e);
+          map.closePopup();
+          onSelectRef.current(c);
+        });
+      });
+
+      marker.bindPopup(container);
       markersRef.current.push(marker);
     });
   }, [condiments, language]);

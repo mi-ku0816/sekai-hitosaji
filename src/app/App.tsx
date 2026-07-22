@@ -1216,7 +1216,11 @@ export default function App() {
                 {language === 'ja' ? '世界の調味料マップ' : 'World Condiments Map'}
               </h3>
               <div className="aspect-video rounded-lg overflow-hidden relative z-0">
-                <CondimentMap condiments={condiments} language={language} />
+                <CondimentMap
+                  condiments={condiments}
+                  language={language}
+                  onSelectCondiment={setSelectedCondiment}
+                />
               </div>
               <p className="text-xs text-[#7c4a1e] mt-3 pl-2">
                 {language === 'ja' ? '世界中から集まった調味料の産地を探索しましょう' : 'Explore condiment origins from around the world'}
