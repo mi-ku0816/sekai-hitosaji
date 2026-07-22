@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, User as UserIcon, Shield, MessageCircle, Home, Grid, TrendingUp, MapPin, Users, Sparkles, Trophy, Menu, X as XIcon, Star, ChevronLeft, Mail } from 'lucide-react';
+import { Plus, Search, User as UserIcon, Shield, MessageCircle, Home, Grid, TrendingUp, MapPin, Users, Sparkles, Trophy, Menu, X as XIcon, Star, ChevronLeft, Mail, ScrollText, ShieldCheck } from 'lucide-react';
 import { CondimentCard } from './components/CondimentCard';
 import { AddCondimentForm } from './components/AddCondimentForm';
 import { CondimentReviews } from './components/CondimentReviews';
@@ -19,6 +19,7 @@ import { ShareModal } from './components/ShareModal';
 import { AdCarousel } from './components/AdCarousel';
 import { CondimentMap } from './components/CondimentMap';
 import { ContactModal } from './components/ContactModal';
+import { LegalModal } from './components/LegalModal';
 import { isAdmin } from './admin';
 import { logSearch } from './searchLog';
 import { CategoryIllustration } from './components/CategoryIllustration';
@@ -41,6 +42,7 @@ export default function App() {
   const [showChat, setShowChat] = useState(false);
   const [showCombination, setShowCombination] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showLegal, setShowLegal] = useState<'terms' | 'privacy' | null>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'search' | 'trends' | 'ranking'>('home');
   const [showNavMenu, setShowNavMenu] = useState(false);
   const [condiments, setCondiments] = useState<Condiment[]>([]);
@@ -950,6 +952,20 @@ export default function App() {
                 <Mail size={16} />
                 <span className="text-sm">{t(language, 'contactUs')}</span>
               </button>
+              <button
+                onClick={() => { setShowLegal('terms'); setShowNavMenu(false); }}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl text-[#a07850] hover:bg-[#fdf5ea] hover:text-[#3d1f00] transition-colors"
+              >
+                <ScrollText size={16} />
+                <span className="text-sm">{language === 'ja' ? '利用規約' : 'Terms'}</span>
+              </button>
+              <button
+                onClick={() => { setShowLegal('privacy'); setShowNavMenu(false); }}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl text-[#a07850] hover:bg-[#fdf5ea] hover:text-[#3d1f00] transition-colors"
+              >
+                <ShieldCheck size={16} />
+                <span className="text-sm">{language === 'ja' ? 'プライバシー' : 'Privacy'}</span>
+              </button>
             </div>
           </div>
         )}
@@ -1253,13 +1269,27 @@ export default function App() {
         <div className="mt-6 text-center text-xs text-gray-400">
           {t(language, 'totalPosts', { count: condiments.length })} / {t(language, 'totalTypes', { count: aggregatedCondiments.length })}
         </div>
-        <div className="mt-2 text-center">
+        <div className="mt-2 flex items-center justify-center flex-wrap gap-x-4 gap-y-1 text-xs text-[#a07850]">
           <button
             onClick={() => setShowContact(true)}
-            className="inline-flex items-center gap-1 text-xs text-[#a07850] hover:text-[#3d1f00] transition-colors"
+            className="inline-flex items-center gap-1 hover:text-[#3d1f00] transition-colors"
           >
             <Mail size={12} />
             {t(language, 'contactUs')}
+          </button>
+          <button
+            onClick={() => setShowLegal('terms')}
+            className="inline-flex items-center gap-1 hover:text-[#3d1f00] transition-colors"
+          >
+            <ScrollText size={12} />
+            {language === 'ja' ? '利用規約' : 'Terms'}
+          </button>
+          <button
+            onClick={() => setShowLegal('privacy')}
+            className="inline-flex items-center gap-1 hover:text-[#3d1f00] transition-colors"
+          >
+            <ShieldCheck size={12} />
+            {language === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}
           </button>
         </div>
       </main>
@@ -1449,6 +1479,12 @@ export default function App() {
           onClose={() => setShowContact(false)}
           language={language}
           currentUser={currentUser}
+        />
+      )}
+      {showLegal && (
+        <LegalModal
+          type={showLegal}
+          onClose={() => setShowLegal(null)}
         />
       )}
       </div>
