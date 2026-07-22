@@ -63,25 +63,36 @@ export async function signOut() {
 }
 
 export async function getProfile(userId: string): Promise<User | null> {
-  const { data, error } = await supabase
+  // まず profile_private を含めて取得
+  let { data, error } = await supabase
     .from('profiles')
     .select('*, profile_private(birthdate, gender, prefecture, city)')
     .eq('id', userId)
     .single();
+
+  // profile_private 未整備などで join に失敗した場合は、公開情報のみで再取得する
+  // （ログイン自体が失敗して「未ログイン扱い」になるのを防ぐ）
+  if (error) {
+    console.warn('プロフィール（非公開情報付き）の取得に失敗、公開情報のみで再取得します:', error.message);
+    const fallback = await supabase.from('profiles').select('*').eq('id', userId).single();
+    data = fallback.data as any;
+    error = fallback.error;
+  }
   if (error || !data) return null;
 
-  const priv = Array.isArray(data.profile_private) ? data.profile_private[0] : data.profile_private;
+  const row = data as any;
+  const priv = Array.isArray(row.profile_private) ? row.profile_private[0] : row.profile_private;
 
   return {
-    id: data.id,
-    nickname: data.nickname,
+    id: row.id,
+    nickname: row.nickname,
     email: '',
     birthdate: priv?.birthdate ?? undefined,
     age: calculateAge(priv?.birthdate),
     prefecture: priv?.prefecture ?? '',
     city: priv?.city ?? '',
     gender: (priv?.gender as User['gender']) ?? '回答しない',
-    tasteBadges: (data.taste_badges ?? []) as User['tasteBadges'],
+    tasteBadges: (row.taste_badges ?? []) as User['tasteBadges'],
   };
 }
 
