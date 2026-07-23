@@ -74,7 +74,7 @@ export const translations = {
     postsCount: '投稿数',
     posts: '件',
     averageRating: '平均リピート度',
-    averageTaste: '平均味覚プロファイル',
+    averageTaste: '平均味覚グラフ',
     allReviews: 'すべてのレビュー',
 
     // Condiment Detail
@@ -303,7 +303,7 @@ export const translations = {
     postsCount: 'Posts',
     posts: 'posts',
     averageRating: 'Avg Repeat Rating',
-    averageTaste: 'Average Taste Profile',
+    averageTaste: 'Average Taste Graph',
     allReviews: 'All Reviews',
 
     // Condiment Detail
@@ -532,7 +532,7 @@ export const translations = {
     postsCount: '投稿数',
     posts: '条',
     averageRating: '平均回购意愿',
-    averageTaste: '平均味觉分析',
+    averageTaste: '平均味觉图表',
     allReviews: '全部评价',
 
     // Condiment Detail
@@ -761,7 +761,7 @@ export const translations = {
     postsCount: '게시물 수',
     posts: '개',
     averageRating: '평균 재구매도',
-    averageTaste: '평균 맛 프로필',
+    averageTaste: '평균 맛 그래프',
     allReviews: '모든 리뷰',
 
     // Condiment Detail
@@ -990,7 +990,7 @@ export const translations = {
     postsCount: 'Publications',
     posts: 'publications',
     averageRating: 'Note de rachat moyenne',
-    averageTaste: 'Profil gustatif moyen',
+    averageTaste: 'Graphique gustatif moyen',
     allReviews: 'Tous les avis',
 
     // Condiment Detail
@@ -1219,7 +1219,7 @@ export const translations = {
     postsCount: 'Publicaciones',
     posts: 'publicaciones',
     averageRating: 'Valoración media de recompra',
-    averageTaste: 'Perfil de sabor promedio',
+    averageTaste: 'Gráfico de sabor promedio',
     allReviews: 'Todas las reseñas',
 
     // Condiment Detail
@@ -1448,7 +1448,7 @@ export const translations = {
     postsCount: 'Số bài đăng',
     posts: 'bài',
     averageRating: 'Mức độ mua lại trung bình',
-    averageTaste: 'Hồ sơ vị trung bình',
+    averageTaste: 'Biểu đồ vị trung bình',
     allReviews: 'Tất cả đánh giá',
 
     // Condiment Detail

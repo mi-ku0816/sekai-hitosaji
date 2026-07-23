@@ -74,9 +74,16 @@ export function CondimentReviews({ aggregated, onClose, onViewUser, language }: 
 
           {/* Average stats */}
           <div className="bg-white rounded-2xl border border-[#e2d5c0] overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-[#e2d5c0] bg-[#faf7f2] flex items-center gap-2">
-              <BarChart2 size={13} className="text-[#c17f3a]" />
-              <span className="text-[10px] font-bold text-[#7c4a1e] tracking-widest uppercase">{t(language, 'averageRating')}</span>
+            <div className="px-4 py-2.5 border-b border-[#e2d5c0] bg-[#faf7f2] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart2 size={13} className="text-[#c17f3a]" />
+                <span className="text-[10px] font-bold text-[#7c4a1e] tracking-widest uppercase">{t(language, 'averageTaste')}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Star size={12} className="text-[#c17f3a] fill-[#c17f3a]" />
+                <span className="text-xs font-bold text-[#3d1f00]">{aggregated.averageRepeatRating.toFixed(1)}</span>
+                <span className="text-[9px] text-[#a07850]">{t(language, 'averageRating')}</span>
+              </div>
             </div>
             <div className="px-4 pb-4 pt-2">
               <TasteRadarChart tasteProfile={aggregated.averageTasteProfile} size="medium" language={language} />
